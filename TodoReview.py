@@ -15,8 +15,9 @@ import sublime
 import functools
 import fnmatch
 import re
+import sys
 
-Message = namedtuple('Message', 'type, msg')
+Result = namedtuple('Result', 'match_name, match_text')
 
 
 def do_when(conditional, callback, *args, **kwargs):
@@ -33,63 +34,34 @@ class Settings():
 		return self.view.get(item, self.user.get(item, default))
 
 class TodoSearchEngine(object):
-	def __init__(self, dirpaths, filepaths, file_counter):
-		self.dirpaths = dirpaths
-		self.filepaths = filepaths
+	def __init__(self, paths_to_search, counter):
+		self.paths_to_search = paths_to_search
 		self.patterns = settings.get('patterns', {})
-		self.file_counter = file_counter
-		self.ignored_files = [fnmatch.translate(patt) for patt in settings.get('exclude_files', [])]
-		self.ignored_folders = [fnmatch.translate(patt) for patt in settings.get('exclude_folders', [])]
+		self.counter = counter
 
-	def iter_files(self):
-		seen_paths_ = []
-		exclude_folders = [re.compile(patt) for patt in self.ignored_folders]
+	def walk(self):
+		for path_to_search in self.paths_to_search:
+			path_to_search = path.abspath(path_to_search)
+			for dirpath, dirnames, filenames in walk(path_to_search):
+				for filename in filenames:
+					filepath = path.join(dirpath, filename)
+					filepath = path.realpath(path.expanduser(path.abspath(filepath)))
+					yield filepath
 
-		for filepath in self.filepaths:
-			pth = path.realpath(path.expanduser(path.abspath(filepath)))
-			if pth not in seen_paths_:
-				seen_paths_.append(pth)
-				yield pth
-
-		for dirpath in self.dirpaths:
-			dirpath = path.abspath(dirpath)
-			for dirpath, dirnames, filenames in walk(dirpath):
-
-				if any(patt.search(dirpath) for patt in exclude_folders):
-					continue
-
-				for filepath in filenames:
-					pth = path.join(dirpath, filepath)
-					pth = path.realpath(path.expanduser(path.abspath(pth)))
-					if pth not in seen_paths_:
-						seen_paths_.append(pth)
-						yield pth
-
-	def filter_files(self, files):
-		exclude_files = [re.compile(patt) for patt in self.ignored_files]
-
-		for filepath in files:
-			if any(patt.search(filepath) for patt in exclude_files):
-				continue
-			yield filepath
-
-	def search_targets(self):
-		return self.filter_files(self.iter_files())
-
-	def extract(self):
-		message_patterns = '|'.join(self.patterns.values())
+	def search(self):
+		todo_pattern = '|'.join(self.patterns.values())
 		case_sensitivity = 0 if settings.get('case_sensitive', False) else re.IGNORECASE
-		patt = re.compile(message_patterns, case_sensitivity)
-		patt_priority = re.compile(r'\(([0-9]{1,2})\)')
-		for filepath in self.search_targets():
-			try:
-				f = open(filepath, 'r', encoding='utf-8')
-				for linenum, line in enumerate(f):
-					for mo in patt.finditer(line):
+		todo_filter = re.compile(todo_pattern, case_sensitivity)
+		priority_filter = re.compile(r'\(([0-9]{1,2})\)')
 
-						matches = [Message(msg_type, msg) for msg_type, msg in mo.groupdict().items() if msg]
-						for matchi in matches:
-							priority = patt_priority.search(matchi.msg)
+		for filepath in self.walk():
+			try:
+				file_stream = open(filepath, 'r', encoding='utf-8')
+				for linenum, line in enumerate(file_stream):
+					for mo in todo_filter.finditer(line):
+						matches = [Result(match_name, match_text) for match_name, match_text in mo.groupdict().items() if match_text]
+						for match in matches:
+							priority = priority_filter.search(match.match_text)
 
 							if priority:
 								priority = int(priority.group(0).replace('(', '').replace(')', ''))
@@ -99,15 +71,16 @@ class TodoSearchEngine(object):
 							yield {
 								'filepath': filepath,
 								'linenum': linenum + 1,
-								'match': matchi,
+								'match': match,
 								'priority': priority
 							}
-			except (IOError, UnicodeDecodeError):
-				f = None
+			except:
+				print("Can not read {0}, because: {1}".format(filepath, sys.exc_info()))
+				file_stream = None
 			finally:
-				self.file_counter.increment()
-				if f is not None:
-					f.close()
+				self.counter.increment()
+				if file_stream is not None:
+					file_stream.close()
 
 class RenderResultRunCommand(sublime_plugin.TextCommand):
 	def run(self, edit, formatted_results, file_counter):
@@ -151,36 +124,33 @@ class RenderResultRunCommand(sublime_plugin.TextCommand):
 		result_view.settings().set('command_mode', True)
 		active_window.focus_view(result_view)
 
-class WorkerThread(threading.Thread):
-	def __init__(self, search_engine, callback, file_counter):
+class SearchThread(threading.Thread):
+	def __init__(self, search_engine, callback, counter):
 		self.search_engine = search_engine
 		self.callback = callback
-		self.file_counter = file_counter
+		self.counter = counter
 		threading.Thread.__init__(self)
 
 	def run(self):
-		todos = self.search_engine.extract()
-		formatted = list(self.format(todos))
-		self.callback(formatted, self.file_counter)
+		result = self.search_engine.search()
+		formatted_result = list(self.format(result))
+		self.callback(formatted_result, self.counter)
 
-	def format(self, messages):
-		messages = sorted(messages, key=lambda m: (m['priority'], m['match'].type))
+	def format(self, result):
+		result = sorted(result, key=lambda m: (m['priority'], m['match'].match_name))
 
-		for message_type, matches in groupby(messages, key=lambda m: m['match'].type):
+		for match_name, matches in groupby(result, key=lambda m: m['match'].match_name):
 			matches = list(matches)
 			if matches:
-				yield ('header', u'\n## {0} ({1})'.format(message_type.upper(), len(matches)), {})
+				yield ('header', u'\n## {0} ({1})'.format(match_name.upper(), len(matches)), {})
 				for idx, m in enumerate(matches, 1):
-					msg = m['match'].msg
+					match_text = m['match'].match_text
 
-					if settings.get('render_include_folder', False):
-						filepath = path.dirname(m['filepath']).replace('\\', '/').split('/')
-						filepath = filepath[len(filepath) - 1]  + '/' + path.basename(m['filepath'])
-					else:
-						filepath = path.basename(m['filepath'])
+					filepath = path.dirname(m['filepath']).replace('\\', '/').split('/')
+					filepath = filepath[len(filepath) - 1]  + '/' + path.basename(m['filepath'])
 
 					spaces = ' '*(settings.get('render_spaces', 1) - len(str(idx) + filepath + ':' + str(m['linenum'])))
-					line = u'{idx}. {filepath}:{linenum}{spaces}{msg}'.format(idx=idx, filepath=filepath, linenum=m['linenum'], spaces=spaces, msg=msg)
+					line = u'{idx}. {filepath}:{linenum}{spaces}{match_text}'.format(idx=idx, filepath=filepath, linenum=m['linenum'], spaces=spaces, match_text=match_text)
 					yield ('result', line, m)
 
 class Counter(object):
@@ -201,14 +171,14 @@ class TodoReviewImpl(sublime_plugin.TextCommand):
 		self.paths_to_search = args["paths_to_search"]
 		print("\n".join(self.paths_to_search))
 
-		self.file_counter = Counter()
-		search_engine = TodoSearchEngine(self.paths_to_search, [], self.file_counter)
+		self.counter = Counter()
+		search_engine = TodoSearchEngine(self.paths_to_search, self.counter)
 
-		worker_thread = WorkerThread(search_engine, self.onSearchingDone, self.file_counter)
+		worker_thread = SearchThread(search_engine, self.onSearchingDone, self.counter)
 		worker_thread.start()
 
 	def onSearchingDone(self, rendered, counter):
-		self.view.run_command('render_result_run', {'formatted_results': rendered, 'file_counter': str(self.file_counter)})
+		self.view.run_command('render_result_run', {'formatted_results': rendered, 'file_counter': str(self.counter)})
 
 class TodoReviewAutoModeCommand(sublime_plugin.TextCommand):
 	def run(self, edit, **args):
@@ -252,7 +222,7 @@ class TodoReviewCommand(sublime_plugin.TextCommand):
 		# file_counter = Counter()
 		# search_engine = TodoSearchEngine(paths, filepaths, file_counter)
 
-		# worker_thread = WorkerThread(search_engine, self.render_formatted, file_counter)
+		# worker_thread = SearchThread(search_engine, self.render_formatted, file_counter)
 		# worker_thread.start()
 		# ThreadProgress(worker_thread, 'Finding TODOs', '', file_counter)
 
