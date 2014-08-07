@@ -32,34 +32,7 @@ class Settings():
 	def get(self, item, default):
 		return self.view.get(item, self.user.get(item, default))
 
-class ThreadProgress(object):
-	def __init__(self, thread, message, success_message, file_counter):
-		self.thread = thread
-		self.message = message
-		self.success_message = success_message
-		self.file_counter = file_counter
-		self.addend = 1
-		self.size = 8
-		sublime.set_timeout(lambda: self.run(0), 100)
-
-	def run(self, i):
-		if not self.thread.is_alive():
-			if hasattr(self.thread, 'result') and not self.thread.result:
-				sublime.status_message('')
-				return
-			sublime.status_message(self.success_message)
-			return
-		before = i % self.size
-		after = (self.size - 1) - before
-		sublime.status_message('%s [%s=%s] (%s files scanned)' % (self.message, ' ' * before, ' ' * after, self.file_counter))
-		if not after:
-			self.addend = -1
-		if not before:
-			self.addend = 1
-		i += self.addend
-		sublime.set_timeout(lambda: self.run(i), 100)
-
-class TodoExtractor(object):
+class TodoSearchEngine(object):
 	def __init__(self, dirpaths, filepaths, file_counter):
 		self.dirpaths = dirpaths
 		self.filepaths = filepaths
@@ -179,16 +152,14 @@ class RenderResultRunCommand(sublime_plugin.TextCommand):
 		active_window.focus_view(result_view)
 
 class WorkerThread(threading.Thread):
-
-	def __init__(self, extractor, callback, file_counter):
-		self.extractor = extractor
+	def __init__(self, search_engine, callback, file_counter):
+		self.search_engine = search_engine
 		self.callback = callback
 		self.file_counter = file_counter
 		threading.Thread.__init__(self)
 
 	def run(self):
-
-		todos = self.extractor.extract()
+		todos = self.search_engine.extract()
 		formatted = list(self.format(todos))
 		self.callback(formatted, self.file_counter)
 
@@ -212,58 +183,78 @@ class WorkerThread(threading.Thread):
 					line = u'{idx}. {filepath}:{linenum}{spaces}{msg}'.format(idx=idx, filepath=filepath, linenum=m['linenum'], spaces=spaces, msg=msg)
 					yield ('result', line, m)
 
-class FileScanCounter(object):
-
+class Counter(object):
 	def __init__(self):
-		self.ct = 0
+		self.current = 0
 		self.lock = threading.RLock()
 
-	def __call__(self, filepath):
-		self.increment()
-
 	def __str__(self):
-		with self.lock:
-			return '%d' % self.ct
+		return "{0}".format(self.current)
 
 	def increment(self):
 		with self.lock:
-			self.ct += 1
+			self.current += 1
+		sublime.status_message("TodoReview: {0} files processed".format(self.current))
 
-	def reset(self):
-		with self.lock:
-			self.ct = 0
+class TodoReviewImpl(sublime_plugin.TextCommand):
+	def run(self, edit, **args):
+		self.paths_to_search = args["paths_to_search"]
+		print("\n".join(self.paths_to_search))
+
+		self.file_counter = Counter()
+		search_engine = TodoSearchEngine(self.paths_to_search, [], self.file_counter)
+
+		worker_thread = WorkerThread(search_engine, self.onSearchingDone, self.file_counter)
+		worker_thread.start()
+
+	def onSearchingDone(self, rendered, counter):
+		self.view.run_command('render_result_run', {'formatted_results': rendered, 'file_counter': str(self.file_counter)})
+
+class TodoReviewAutoModeCommand(sublime_plugin.TextCommand):
+	def run(self, edit, **args):
+		self.view.run_command("todo_review_impl", {
+			"paths_to_search": self.view.window().folders()
+			})
 
 class TodoReviewCommand(sublime_plugin.TextCommand):
-	def run(self, edit, paths=False, open_files=False, open_files_only=False):
+	def run(self, edit, **args):
+		if args["mode"] == "auto":
+			self.view.run_command("todo_review_auto_mode")
+		elif args["mode"] == "manual":
+			#TODO: implement manual mode
+			print("implement manual mode")
+		else:
+			print("\"{0}\" mode is not supported yet!".format(str(args["mode"])))
+
 		global settings
 
 		filepaths = []
 		settings = Settings(self.view)
 		self.window = self.view.window()
 
-		if not paths:
-			if settings.get('include_paths', False):
-				paths = settings.get('include_paths', False)
+		# if not paths:
+		# 	if settings.get('include_paths', False):
+		# 		paths = settings.get('include_paths', False)
 
-		if open_files:
-			filepaths = [view.file_name() for view in self.window.views() if view.file_name()]
+		# if open_files:
+		# 	filepaths = [view.file_name() for view in self.window.views() if view.file_name()]
 
-		if not open_files_only:
-			if not paths:
-				paths = self.window.folders()
-			else:
-				for p in paths:
-					if path.isfile(p):
-						filepaths.append(p)
-		else:
-			paths = []
+		# if not open_files_only:
+		# 	if not paths:
+		# 		paths = self.window.folders()
+		# 	else:
+		# 		for p in paths:
+		# 			if path.isfile(p):
+		# 				filepaths.append(p)
+		# else:
+		# 	paths = []
 
-		file_counter = FileScanCounter()
-		extractor = TodoExtractor(paths, filepaths, file_counter)
+		# file_counter = Counter()
+		# search_engine = TodoSearchEngine(paths, filepaths, file_counter)
 
-		worker_thread = WorkerThread(extractor, self.render_formatted, file_counter)
-		worker_thread.start()
-		ThreadProgress(worker_thread, 'Finding TODOs', '', file_counter)
+		# worker_thread = WorkerThread(search_engine, self.render_formatted, file_counter)
+		# worker_thread.start()
+		# ThreadProgress(worker_thread, 'Finding TODOs', '', file_counter)
 
 	def render_formatted(self, rendered, counter):
 		self.window.run_command('render_result_run', {'formatted_results': rendered, 'file_counter': str(counter)})
