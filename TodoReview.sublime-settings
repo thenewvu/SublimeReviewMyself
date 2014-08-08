@@ -1,17 +1,11 @@
 {
-	"patterns": {
-		"TODO": "TODO[\\s]*?:+(?P<todo>.*)$"
-	},
-	"exclude_folders": [
-		"*.git*"
+	"todo_patterns": [
+		"TODO[\\s]*?:+(?P<todo>.*)$"
 	],
-	"exclude_files": [
-		"*.sublime-workspace",
-		"*.sublime-project"
+	"priority_patterns": [
+		"\\(([0-9]{1,2})\\)"
 	],
-	"case_sensitive": false,
-	"render_include_folder": false,
-	"render_spaces": 1,
+	"is_ignore_case": true,
 	"navigation_forward_skip" : 10,
 	"navigation_backward_skip" : 10
 }

@@ -25,19 +25,25 @@ def do_when(conditional, callback, *args, **kwargs):
 		return callback(*args, **kwargs)
 	sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
 
+class Util():
+	@staticmethod
+	def log(message):
+		print("ReviewMyself: {0}".format(message))
+
 class Settings():
 	def __init__(self, view):
-		self.user = sublime.load_settings('TodoReview.sublime-settings')
-		self.view = view.settings().get('todoreview', {})
+		self.user = sublime.load_settings('TodoReview.sublime-settings') #TODO: change file name
+		self.default = view.settings().get('todoreview', {}) #TODO: change setting name
 
-	def get(self, item, default):
-		return self.view.get(item, self.user.get(item, default))
+	def get(self, field, defaultValue):
+		return self.default.get(field, self.user.get(field, defaultValue))
 
 class TodoSearchEngine(object):
-	def __init__(self, paths_to_search, counter):
-		self.paths_to_search = paths_to_search
-		self.patterns = settings.get('patterns', {})
-		self.counter = counter
+	def __init__(self):
+		self.paths_to_search = []
+		self.todo_filter = None
+		self.priority_filter = None
+		self.counter = None
 
 	def walk(self):
 		for path_to_search in self.paths_to_search:
@@ -49,19 +55,14 @@ class TodoSearchEngine(object):
 					yield filepath
 
 	def search(self):
-		todo_pattern = '|'.join(self.patterns.values())
-		case_sensitivity = 0 if settings.get('case_sensitive', False) else re.IGNORECASE
-		todo_filter = re.compile(todo_pattern, case_sensitivity)
-		priority_filter = re.compile(r'\(([0-9]{1,2})\)')
-
 		for filepath in self.walk():
 			try:
 				file_stream = open(filepath, 'r', encoding='utf-8')
 				for linenum, line in enumerate(file_stream):
-					for mo in todo_filter.finditer(line):
+					for mo in self.todo_filter.finditer(line):
 						matches = [Result(match_name, match_text) for match_name, match_text in mo.groupdict().items() if match_text]
 						for match in matches:
-							priority = priority_filter.search(match.match_text)
+							priority = self.priority_filter.search(match.match_text)
 
 							if priority:
 								priority = int(priority.group(0).replace('(', '').replace(')', ''))
@@ -75,7 +76,7 @@ class TodoSearchEngine(object):
 								'priority': priority
 							}
 			except:
-				print("Can not read {0}, because: {1}".format(filepath, sys.exc_info()))
+				Util.log("Read error, file: {0}, reason: {1}".format(filepath, sys.exc_info()))
 				file_stream = None
 			finally:
 				self.counter.increment()
@@ -132,27 +133,21 @@ class SearchThread(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		result = self.search_engine.search()
-		formatted_result = list(self.format(result))
-		self.callback(formatted_result, self.counter)
+		results = self.search_engine.search()
+		formatted_results = list(self.format(results))
+		self.callback(formatted_results, self.counter)
 
-	def format(self, result):
-		result = sorted(result, key=lambda m: (m['priority'], m['match'].match_name))
+	def format(self, results):
+		results = sorted(results, key=lambda result: (result['priority']))
+		for index, result in enumerate(results, 1):
+			line = u'{index}. {filepath}:{linenum}: {match_text}'.format(
+				index=index,
+				filepath=result["filepath"],
+				linenum=result['linenum'],
+				match_text=result["match"].match_text)
 
-		for match_name, matches in groupby(result, key=lambda m: m['match'].match_name):
-			matches = list(matches)
-			if matches:
-				yield ('header', u'\n## {0} ({1})'.format(match_name.upper(), len(matches)), {})
-				for idx, m in enumerate(matches, 1):
-					match_text = m['match'].match_text
-
-					filepath = path.dirname(m['filepath']).replace('\\', '/').split('/')
-					filepath = filepath[len(filepath) - 1]  + '/' + path.basename(m['filepath'])
-
-					spaces = ' '*(settings.get('render_spaces', 1) - len(str(idx) + filepath + ':' + str(m['linenum'])))
-					line = u'{idx}. {filepath}:{linenum}{spaces}{match_text}'.format(idx=idx, filepath=filepath, linenum=m['linenum'], spaces=spaces, match_text=match_text)
-					yield ('result', line, m)
-
+			yield ('result', line, result)
+					
 class Counter(object):
 	def __init__(self):
 		self.current = 0
@@ -168,14 +163,28 @@ class Counter(object):
 
 class TodoReviewImpl(sublime_plugin.TextCommand):
 	def run(self, edit, **args):
-		self.paths_to_search = args["paths_to_search"]
-		print("\n".join(self.paths_to_search))
+		global settings
+		settings = Settings(self.view)
 
+		if "paths_to_search" in args:
+			self.paths_to_search = args["paths_to_search"]
+		else:
+			self.paths_to_search = []
+		self.is_ignore_case = settings.get("is_ignore_case", True)
+		self.todo_patterns = settings.get("todo_patterns", {})
+		self.priority_patterns = settings.get("priority_patterns", {})
 		self.counter = Counter()
-		search_engine = TodoSearchEngine(self.paths_to_search, self.counter)
 
-		worker_thread = SearchThread(search_engine, self.onSearchingDone, self.counter)
-		worker_thread.start()
+		Util.log("paths_to_search = {0}".format(self.paths_to_search))
+
+		search_engine = TodoSearchEngine()
+		search_engine.paths_to_search = self.paths_to_search
+		search_engine.counter = self.counter
+		search_engine.todo_filter = re.compile("|".join(self.todo_patterns), re.IGNORECASE if self.is_ignore_case else 0)
+		search_engine.priority_filter = re.compile("|".join(self.priority_patterns), re.IGNORECASE if self.is_ignore_case else 0)
+
+		self.search_thread = SearchThread(search_engine, self.onSearchingDone, self.counter)
+		self.search_thread.start()
 
 	def onSearchingDone(self, rendered, counter):
 		self.view.run_command('render_result_run', {'formatted_results': rendered, 'file_counter': str(self.counter)})
@@ -187,44 +196,19 @@ class TodoReviewAutoModeCommand(sublime_plugin.TextCommand):
 			})
 
 class TodoReviewCommand(sublime_plugin.TextCommand):
-	def run(self, edit, **args):
-		if args["mode"] == "auto":
-			self.view.run_command("todo_review_auto_mode")
-		elif args["mode"] == "manual":
-			#TODO: implement manual mode
-			print("implement manual mode")
+	def run(self, edit, **args):		
+		if "mode" in args:
+			self.mode = args["mode"]
 		else:
-			print("\"{0}\" mode is not supported yet!".format(str(args["mode"])))
+			self.mode = "auto"
 
-		global settings
-
-		filepaths = []
-		settings = Settings(self.view)
-		self.window = self.view.window()
-
-		# if not paths:
-		# 	if settings.get('include_paths', False):
-		# 		paths = settings.get('include_paths', False)
-
-		# if open_files:
-		# 	filepaths = [view.file_name() for view in self.window.views() if view.file_name()]
-
-		# if not open_files_only:
-		# 	if not paths:
-		# 		paths = self.window.folders()
-		# 	else:
-		# 		for p in paths:
-		# 			if path.isfile(p):
-		# 				filepaths.append(p)
-		# else:
-		# 	paths = []
-
-		# file_counter = Counter()
-		# search_engine = TodoSearchEngine(paths, filepaths, file_counter)
-
-		# worker_thread = SearchThread(search_engine, self.render_formatted, file_counter)
-		# worker_thread.start()
-		# ThreadProgress(worker_thread, 'Finding TODOs', '', file_counter)
+		if self.mode == "auto":
+			self.view.run_command("todo_review_auto_mode")
+		elif self.mode == "manual":
+			#TODO: implement manual mode
+			Util.log("manual mode is under construction!")
+		else:
+			Util.log("\"{0}\" mode is not supported yet!".format(self.mode))
 
 	def render_formatted(self, rendered, counter):
 		self.window.run_command('render_result_run', {'formatted_results': rendered, 'file_counter': str(counter)})
