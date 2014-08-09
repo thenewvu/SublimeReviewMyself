@@ -5,7 +5,5 @@
 	"priority_patterns": [
 		"\\(([0-9]{1,2})\\)"
 	],
-	"is_ignore_case": true,
-	"navigation_forward_skip" : 10,
-	"navigation_backward_skip" : 10
+	"is_ignore_case": true
 }

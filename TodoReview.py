@@ -24,12 +24,6 @@ class Util():
 	def status(message):
 		sublime.status_message("ReviewMyself: {0}".format(message))
 
-	@staticmethod
-	def doWhenSomethingDone(condition, callback, *args, **kwargs):
-		if condition():
-			return callback(*args, **kwargs)
-		sublime.set_timeout(functools.partial(Util.doWhenSomethingDone, condition, callback, *args, **kwargs), 50)
-
 class Settings():
 	def __init__(self, view):
 		self.user = sublime.load_settings('TodoReview.sublime-settings') #TODO: change file name
@@ -286,23 +280,4 @@ class TodoReviewGotoCommand(sublime_plugin.TextCommand):
 		region_to_result_dict = self.view.settings().get('region_to_result_dict')
 
 		result = region_to_result_dict['{0},{1}'.format(selected_region.a, selected_region.b)]
-		new_view = self.view.window().open_file(result['filepath'])
-		Util.doWhenSomethingDone(lambda: not new_view.is_loading(), lambda:new_view.run_command('goto_line', {'line': result['linenum']}))
-
-# Reference: https://github.com/bradrobertson/sublime-packages/blob/master/Default/goto_line.py
-class GotoLineCommand(sublime_plugin.TextCommand):
-	def run(self, edit, line):
-		# Convert from 1 based to a 0 based line number
-		line = int(line) - 1
-
-		# Negative line numbers count from the end of the buffer
-		if line < 0:
-			lines, _ = self.view.rowcol(self.view.size())
-			line = lines + line + 1
-
-		pt = self.view.text_point(line, 0)
-
-		self.view.sel().clear()
-		self.view.sel().add(sublime.Region(pt))
-
-		self.view.show_at_center(pt)
+		new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
