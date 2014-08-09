@@ -1,0 +1,41 @@
+[
+	{
+		"keys": ["down"], "command": "review_myself_navigate_result",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"args": {"direction": "down"}
+	},
+	{
+		"keys": ["up"], "command": "review_myself_navigate_result",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"args": {"direction": "up"}
+	},
+	{
+		"keys": ["k"], "command": "review_myself_navigate_result",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"args": {"direction": "down"}
+	},
+	{
+		"keys": ["j"], "command": "review_myself_navigate_result",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"args": {"direction": "up"}
+	},
+	{
+		"keys": ["enter"], "command": "review_myself_goto",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		]
+	}
+]

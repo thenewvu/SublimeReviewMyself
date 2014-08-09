@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>name</key>
-    <string>TodoReview</string>
+    <string>ReviewMyself</string>
 
     <key>patterns</key>
     <array>

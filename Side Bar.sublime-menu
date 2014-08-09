@@ -4,8 +4,8 @@
 		"id": "side-bar-end-separator"
 	},
 	{
-		"caption": "TodoReview",
-		"command": "todo_review",
+		"caption": "ReviewMyself",
+		"command": "review_myself_impl",
 		"args": { "paths": [] }
 	},
 	{

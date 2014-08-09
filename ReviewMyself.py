@@ -1,13 +1,6 @@
-'''
-SublimeTodoReview
-A SublimeText 3 plugin for reviewing todo (any other) comments within your code.
-
-@author Jonathan Delgado (Initial Repo by @robcowie and ST3 update by @dnatag)
-'''
-
-from os import path, walk
 import sublime_plugin
 import sublime
+import os
 import threading
 import functools
 import fnmatch
@@ -26,13 +19,13 @@ class Util():
 
 class Settings():
 	def __init__(self, view):
-		self.user = sublime.load_settings('TodoReview.sublime-settings') #TODO: change file name
-		self.default = view.settings().get('todoreview', {}) #TODO: change setting name
+		self.user = sublime.load_settings("ReviewMyself.sublime-settings")
+		self.default = view.settings().get("reviewmyself", {})
 
-	def get(self, field, defaultValue):
-		return self.default.get(field, self.user.get(field, defaultValue))
+	def get(self, settingName, defaultValue):
+		return self.user.get(settingName, self.default.get(settingName, defaultValue))
 
-class TodoSearchEngine(object):
+class TodoSearchEngine():
 	def __init__(self):
 		self.paths_to_search = []
 		self.todo_filter = None
@@ -41,11 +34,13 @@ class TodoSearchEngine(object):
 
 	def walk(self):
 		for path_to_search in self.paths_to_search:
-			path_to_search = path.abspath(path_to_search)
-			for dirpath, dirnames, filenames in walk(path_to_search):
+			path_to_search = os.path.abspath(path_to_search)
+			if os.path.isfile(path_to_search):
+				yield path_to_search
+			for dirpath, dirnames, filenames in os.walk(path_to_search):
 				for filename in filenames:
-					filepath = path.join(dirpath, filename)
-					filepath = path.realpath(path.expanduser(path.abspath(filepath)))
+					filepath = os.path.join(dirpath, filename)
+					filepath = os.path.realpath(os.path.expanduser(os.path.abspath(filepath)))
 					yield filepath
 
 	def search(self):
@@ -81,24 +76,22 @@ class ResultView():
 	@staticmethod
 	def get():
 		active_window = sublime.active_window()
-		#TODO: change result view attributes
-		existed_result_view = [view for view in active_window.views() if view.name() == 'TodoReview' and view.is_scratch()]
+		existed_result_view = [view for view in active_window.views() if view.name() == 'ReviewMyself' and view.is_scratch()]
 		if existed_result_view:
 			result_view = existed_result_view[0]
 		else:
 			result_view = active_window.new_file()
-			result_view.set_name('TodoReview')
+			result_view.set_name('ReviewMyself')
 			result_view.set_scratch(True)
-			result_view.settings().set('line_padding_bottom', 2)
-			result_view.settings().set('line_padding_top', 2)
-			result_view.settings().set('word_wrap', False)
+			# result_view.settings().set('word_wrap', False)
+			result_view.settings().set("line_numbers", False)
 			result_view.settings().set('command_mode', True)
-			result_view.settings().set('todo_results', True)
-			result_view.assign_syntax('Packages/TodoReview/TodoReview.hidden-tmLanguage')
+			result_view.settings().set('review_myself_view', True)
+			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.hidden-tmLanguage')
 
 		return result_view
 
-class TodoReviewShowResultCommand(sublime_plugin.TextCommand):
+class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 	def run(self, edit, **args):
 		paths_to_search = args.get("paths_to_search", [])
 		results = args.get("results", [])
@@ -109,7 +102,7 @@ class TodoReviewShowResultCommand(sublime_plugin.TextCommand):
 		result_view = ResultView.get()
 		result_view.erase(edit, sublime.Region(0, result_view.size()))
 
-		hr = "-" * 100 + "\n"
+		hr = "-" * 50 + "\n"
 		search_session_info = ""
 
 		search_session_info += hr
@@ -156,7 +149,7 @@ class SearchThread(threading.Thread):
 		self.search_engine.counter.stopTimer()
 		self.onSearchingDone(results, self.search_engine.counter)
 					
-class Counter(object):
+class Counter():
 	def __init__(self):
 		self.current = 0
 		self.start_time = 0
@@ -178,19 +171,16 @@ class Counter(object):
 	def increment(self):
 		with self.lock:
 			self.current += 1
-		sublime.status_message("TodoReview: {0} files processed".format(self.current))
+		sublime.status_message("ReviewMyself: {0} files processed".format(self.current))
 
-class TodoReviewImpl(sublime_plugin.TextCommand):
-	def run(self, edit, **args):
-		global settings
+class ReviewMyselfImpl(sublime_plugin.TextCommand):
+	def run(self, edit, paths):
 		settings = Settings(self.view)
 
-		self.paths_to_search = args.get("paths_to_search", [])
+		self.paths_to_search = paths
 		self.is_ignore_case = settings.get("is_ignore_case", True)
 		self.todo_patterns = settings.get("todo_patterns", [])
 		self.priority_patterns = settings.get("priority_patterns", [])
-
-		Util.log("paths_to_search = {0}".format(self.paths_to_search))
 
 		self.search_engine = TodoSearchEngine()
 		self.search_engine.paths_to_search = self.paths_to_search
@@ -201,38 +191,30 @@ class TodoReviewImpl(sublime_plugin.TextCommand):
 		self.search_thread.start()
 
 	def onSearchingDone(self, results, counter):
-		self.view.run_command("todo_review_show_result", {
+		self.view.run_command("review_myself_show_result", {
 			"paths_to_search": self.paths_to_search,
 			"results": results,
 			"processed_file_count": counter.current,
 			"processed_time": counter.getDeltaTime()
 			})
 
-class TodoReviewAutoModeCommand(sublime_plugin.TextCommand):
-	def run(self, edit, **args):
-		self.view.run_command("todo_review_impl", {
-			"paths_to_search": self.view.window().folders()
+class ReviewMyselfAutoModeCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		self.view.run_command("review_myself_impl", {
+			"paths": self.view.window().folders()
 			})
 
-class TodoReviewCommand(sublime_plugin.TextCommand):
-	def run(self, edit, **args):		
-		if "mode" in args:
-			self.mode = args["mode"]
-		else:
-			self.mode = "auto"
-
-		if self.mode == "auto":
-			self.view.run_command("todo_review_auto_mode")
-		elif self.mode == "manual":
+class ReviewMyselfCommand(sublime_plugin.TextCommand):
+	def run(self, edit, mode):
+		if mode == "auto":
+			self.view.run_command("review_myself_auto_mode")
+		elif mode == "manual":
 			#TODO: implement manual mode
-			Util.log("manual mode is under construction!")
+			Util.status("manual mode is under construction!")
 		else:
-			Util.log("\"{0}\" mode is not supported yet!".format(self.mode))
+			Util.status("'{0}' mode is not supported yet! What wrong with your settings ?".format(mode))
 
-	def render_formatted(self, rendered, counter):
-		self.window.run_command('render_result_run', {'formatted_results': rendered, 'file_counter': str(counter)})
-
-class TodoReviewNavigateResultCommand(sublime_plugin.TextCommand):
+class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 	def run(self, edit, direction):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
@@ -262,7 +244,7 @@ class TodoReviewNavigateResultCommand(sublime_plugin.TextCommand):
 		self.view.add_regions('selected_region', [selected_region], 'selected', 'dot')
 		self.view.show(selected_region)
 
-class TodoReviewGotoCommand(sublime_plugin.TextCommand):
+class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
