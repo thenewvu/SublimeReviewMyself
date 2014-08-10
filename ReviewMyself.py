@@ -7,66 +7,105 @@ import fnmatch
 import re
 import sys
 import timeit
+import ntpath
 
 class Util():
 	@staticmethod
-	def log(message):
-		print("ReviewMyself: {0}".format(message))
+	def log(tag, message):
+		print("{tag}: {message}".format(tag = tag, message = message))
 
 	@staticmethod
 	def status(message):
-		sublime.status_message("ReviewMyself: {0}".format(message))
+		sublime.status_message("{message}".format(message = message))
 
 class Settings():
-	def __init__(self, view):
-		self.user = sublime.load_settings("ReviewMyself.sublime-settings")
-		self.default = view.settings().get("reviewmyself", {})
+	def __init__(self, view, setting_name):
+		self.default = sublime.load_settings("{setting_name}.sublime-settings".format(setting_name = setting_name))
+		self.user = view.settings().get("{setting_name}".format(setting_name = setting_name), {})
+		print(self.default)
+		print(self.user)
 
-	def get(self, settingName, defaultValue):
-		return self.user.get(settingName, self.default.get(settingName, defaultValue))
+	def get(self, fieldName, defaultValue):
+		return self.user.get(fieldName, self.default.get(fieldName, defaultValue))
 
 class TodoSearchEngine():
+	TAG = "ReviewMyself.TodoSearchEngine"
+
 	def __init__(self):
 		self.paths_to_search = []
 		self.todo_filter = None
 		self.priority_filter = None
+		self.exclude_patterns = ["*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico",
+								"*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", "*.pyc", "*.pyo", "*.exe",
+								"*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb",
+								"*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd",
+								"*.db", "*.sublime-workspace",
+								".svn", ".git", ".hg", "CVS"]
 		self.counter = Counter()
+
+	def basename(self, path):
+		head, tail = ntpath.split(path)
+		return tail or ntpath.basename(head)
+
+	def isIgnoredName(self, name):
+		for pattern in self.exclude_patterns:
+			if fnmatch.fnmatch(name, pattern):
+				return True
+		return False
+
+	def filterNames(self, names):
+		filtered_names = []
+		for name in names:
+			if not self.isIgnoredName(name):
+				filtered_names.append(name)
+		return filtered_names
 
 	def walk(self):
 		for path_to_search in self.paths_to_search:
-			path_to_search = os.path.abspath(path_to_search)
-			if os.path.isfile(path_to_search):
-				yield path_to_search
-			for dirpath, dirnames, filenames in os.walk(path_to_search):
-				for filename in filenames:
-					filepath = os.path.join(dirpath, filename)
-					filepath = os.path.realpath(os.path.expanduser(os.path.abspath(filepath)))
-					yield filepath
-
+			path_to_search = os.path.realpath(os.path.expanduser(os.path.abspath(path_to_search)))
+			if os.path.exists(path_to_search):
+				if os.path.isfile(path_to_search):
+					filename = self.basename(path_to_search)
+					if not self.isIgnoredName(filename):
+						yield path_to_search
+				for dirpath, dirnames, filenames in os.walk(path_to_search, topdown = True):
+					dirnames[:] = self.filterNames(dirnames)
+					filenames[:] = self.filterNames(filenames)
+					for filename in filenames:
+						filepath = os.path.join(dirpath, filename)
+						yield filepath
+	
 	def search(self):
 		for filepath in self.walk():
 			try:
 				file_stream = open(filepath, 'r', encoding='utf-8')
 				for linenum, line in enumerate(file_stream, 1):
-					for matches in self.todo_filter.finditer(line):
-						for match_name, match_text in matches.groupdict().items():
-							priority = self.priority_filter.search(match_text)
+					match = self.todo_filter.search(line)
+					if match:
+						match_groups = match.groupdict()
+						if "todo" not in match_groups:
+							Util.status("Wrong todo pattern! What matter with your settings ?")
+							return
 
-							if priority:
-								priority = int(priority.group(0).replace('(', '').replace(')', ''))
-							else:
-								priority = 100
+						todo = match_groups["todo"]
 
-							yield {
-								'filepath': filepath,
-								'linenum': linenum,
-								'todo': match_text,
-								'priority': priority
-							}
-			except:
-				# Util.log("Read error, file: {0}, reason: {1}".format(filepath, sys.exc_info()))
-				Util.log("Can not read {0}".format(filepath))
+						#TODO: process priority
+						# priority = self.priority_filter.search(todo)
+						priority = 100
+
+						yield {
+							'filepath': filepath,
+							'linenum': linenum,
+							'todo': todo,
+							'priority': priority
+						}
+
+			except Exception as e:
 				file_stream = None
+				Util.log(TodoSearchEngine.TAG, r"Can't read '{filepath}', error: {exception_info}".format(
+					filepath = filepath,
+					exception_info = e))
+				
 			finally:
 				self.counter.increment()
 				if file_stream is not None:
@@ -83,10 +122,10 @@ class ResultView():
 			result_view = active_window.new_file()
 			result_view.set_name('ReviewMyself')
 			result_view.set_scratch(True)
-			# result_view.settings().set('word_wrap', False)
-			result_view.settings().set("line_numbers", False)
-			result_view.settings().set('command_mode', True)
 			result_view.settings().set('review_myself_view', True)
+			result_view.settings().set('command_mode', True)
+			result_view.settings().set('word_wrap', False)
+			result_view.settings().set("line_numbers", False)
 			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.hidden-tmLanguage')
 
 		return result_view
@@ -175,11 +214,12 @@ class Counter():
 
 class ReviewMyselfImpl(sublime_plugin.TextCommand):
 	def run(self, edit, paths):
-		settings = Settings(self.view)
+		settings = Settings(self.view, "ReviewMyself")
 
 		self.paths_to_search = paths
 		self.is_ignore_case = settings.get("is_ignore_case", True)
 		self.todo_patterns = settings.get("todo_patterns", [])
+		Util.log("vu.lethanh", self.todo_patterns)
 		self.priority_patterns = settings.get("priority_patterns", [])
 
 		self.search_engine = TodoSearchEngine()
@@ -205,6 +245,8 @@ class ReviewMyselfAutoModeCommand(sublime_plugin.TextCommand):
 			})
 
 class ReviewMyselfCommand(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfCommand"
+
 	def run(self, edit, mode):
 		if mode == "auto":
 			self.view.run_command("review_myself_auto_mode")
@@ -212,9 +254,11 @@ class ReviewMyselfCommand(sublime_plugin.TextCommand):
 			#TODO: implement manual mode
 			Util.status("manual mode is under construction!")
 		else:
-			Util.status("'{0}' mode is not supported yet! What wrong with your settings ?".format(mode))
+			Util.status("'{0}' mode is not supported yet! What matter with your settings ?".format(mode))
 
 class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfNavigateResultCommand"
+
 	def run(self, edit, direction):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
@@ -245,6 +289,8 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 		self.view.show(selected_region)
 
 class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfGotoCommand"
+
 	def run(self, edit):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
