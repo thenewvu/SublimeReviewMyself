@@ -8,60 +8,37 @@
     <key>patterns</key>
     <array>
         <dict>
-            <key>comment</key>
-            <string>Titles</string>
-
+            <key>captures</key>
+            <dict>
+                <key>1</key>
+                <dict>
+                    <key>name</key>
+                    <string>entity.name.type.class.python</string>
+                </dict>
+                <key>2</key>
+                <dict>
+                    <key>name</key>
+                    <string>entity.name.type.class.python</string>
+                </dict>
+                <key>3</key>
+                <dict>
+                    <key>name</key>
+                    <string>entity.name.type.class.python</string>
+                </dict>
+                <key>4</key>
+                <dict>
+                    <key>name</key>
+                    <string>entity.name.type.class.python</string>
+                </dict>
+            </dict>
             <key>match</key>
-            <string>^.*##.*$</string>
-
-            <key>name</key>
-            <string>string</string>
-        </dict>
-        <dict>
-            <key>comment</key>
-            <string>Line Num</string>
-
-            <key>match</key>
-            <string>:[0-9]+\s</string>
-
-            <key>name</key>
-            <string>entity.name.function</string>
-        </dict>
-        <dict>
-            <key>comment</key>
-            <string>Priority</string>
-
-            <key>match</key>
-            <string>\(([0-9]{1,2})\)</string>
-
-            <key>name</key>
-            <string>variable</string>
-        </dict>
-        <dict>
-            <key>comment</key>
-            <string>Brackets</string>
-
-            <key>match</key>
-            <string>\[(.*?)\]</string>
-
-            <key>name</key>
-            <string>entity.name.class</string>
-        </dict>
-        <dict>
-            <key>comment</key>
-            <string>@tags</string>
-
-            <key>match</key>
-            <string>\@\S+</string>
-
-            <key>name</key>
-            <string>keyword</string>
+            <string>(\d+\.)\t(.+)(:\d+)\s\t\=\>\s(.+)</string>
         </dict>
     </array>
 
     <key>scopeName</key>
-    <string>text.todo-list</string>
+    <string>source.python</string>
     <key>uuid</key>
-    <string>c67743c1-8072-45e2-8229-271c169b60d0</string>
+    <string>F23DB5B2-7D08-11D9-A709-000D93B6E43C</string>
 </dict>
 </plist>
