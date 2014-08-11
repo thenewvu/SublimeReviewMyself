@@ -1,9 +1,9 @@
 {
 	"todo_patterns": [
-		"TODO[\\s]*?:+(?P<todo>.*)$"
+		"TODO\\s*:+\\s*(?P<todo>.*)$"
 	],
 	"priority_patterns": [
-		"\\(([0-9]{1,2})\\)"
+		"#p(?P<priority>[1-3])"
 	],
 	"is_ignore_case": true
 }

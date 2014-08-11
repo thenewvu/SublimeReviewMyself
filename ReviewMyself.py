@@ -34,8 +34,6 @@ class Util():
 
 		return filtered_texts
 
-				
-
 class Settings():
 	def __init__(self, view, setting_name):
 		self.default = sublime.load_settings("{setting_name}.sublime-settings".format(setting_name = setting_name))
@@ -105,15 +103,19 @@ class TodoSearchEngine():
 					match = self.todo_filter.search(line)
 					if match:
 						match_groups = match.groupdict()
-						if "todo" not in match_groups:
-							Util.status("Wrong todo pattern! What matter with your settings ?")
-							return
 
-						todo = match_groups["todo"]
+						todo = ""
+						if "todo" in match_groups:
+							todo = match_groups["todo"]
 
-						#TODO: process priority
-						# priority = self.priority_filter.search(todo)
-						priority = 100
+						match = self.priority_filter.search(todo)
+
+						priority = 9999 #TODO: unhardcode max priority #p3
+						if match:
+							match_groups = match.groupdict()
+							if "priority" in match_groups:
+								priority = int(match_groups["priority"])
+								#TODO: remove priority tag from todo #p1
 
 						yield {
 							'filepath': filepath,
@@ -156,7 +158,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 	def run(self, edit, **args):
 		paths_to_search = args.get("paths_to_search", [])
 		results = args.get("results", [])
-		results = sorted(results, key=lambda result: (result['priority'])) # sort by proority
+		results = sorted(results, key=lambda result: (result['priority'])) # sort by priority
 		processed_file_count = args.get("processed_file_count", 0)
 		processed_time = args.get("processed_time", 0)
 
