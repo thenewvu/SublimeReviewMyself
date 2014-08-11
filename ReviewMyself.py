@@ -18,6 +18,24 @@ class Util():
 	def status(message):
 		sublime.status_message("{message}".format(message = message))
 
+	@staticmethod
+	def isMatchUnixPatterns(text, patterns):
+		for pattern in patterns:
+			if fnmatch.fnmatch(text, pattern):
+				return True
+		return False
+
+	@staticmethod
+	def filterByUnixPatterns(texts, patterns, keep_if_match):
+		filtered_texts = []
+		for text in texts:
+			if keep_if_match == Util.isMatchUnixPatterns(text, patterns):
+				filtered_texts.append(text)
+
+		return filtered_texts
+
+				
+
 class Settings():
 	def __init__(self, view, setting_name):
 		self.default = sublime.load_settings("{setting_name}.sublime-settings".format(setting_name = setting_name))
@@ -35,52 +53,15 @@ class TodoSearchEngine():
 		self.paths_to_search = []
 		self.todo_filter = None
 		self.priority_filter = None
-		self.ignored_file_patterns = ["*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico",
-										"*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", "*.pyc", "*.pyo", "*.exe",
-										"*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb",
-										"*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd",
-										"*.db", "*.sublime-workspace"]
 		self.ignored_dir_patterns = [".svn", ".git", ".hg", "CVS"]
-		self.only_care_file_patterns = ["*.cpp"]
-		self.only_care_dir_patterns = []
+		self.only_care_file_patterns = ["*.cpp", "*.py", ".c", "*.hpp", "*.h"]
 		self.counter = Counter()
 
-	# '''
-	# 	Extract directory/file name from a path.
-	# 	Ex:
-	# 	'a/b/c/', 'a/b/c', '\\a\\b\\c', '\\a\\b\\c\\', 'a\\b\\c', 'a/b/../../a/b/c/', 'a/b/../../a/b/c'
-	# 	=> 'c', 'c', 'c', 'c', 'c', 'c', 'c'
-	# 	Ref: http://stackoverflow.com/questions/8384737/python-extract-file-name-from-path-no-matter-what-the-os-path-format
-	# '''
-	# def getBasename(self, path):
-	# 	head, tail = ntpath.split(path)
-	# 	return tail or ntpath.basename(head)
+	def hasIgnoredDirs(self):
+		return len(self.ignored_dir_patterns) > 0
 
-	def isMatchUnixPatterns(self, text, patterns):
-		for pattern in patterns:
-			if fnmatch.fnmatch(text, pattern):
-				return True
-		return False
-
-	def removeIgnoredFileName(self, names):
-		filtered_names = []
-		for name in names:
-			if not self.isMatchUnixPatterns(name, self.ignored_file_patterns):
-				filtered_names.append(name)
-		return filtered_names
-		
-	def removeIgnoredDirName(self, names):
-		filtered_names = []
-		for name in names:
-			if not self.isMatchUnixPatterns(name, self.ignored_dir_patterns):
-				filtered_names.append(name)
-		return filtered_names
-
-	def hasOnlyCareFile(self):
+	def hasOnlyCareFiles(self):
 		return len(self.only_care_file_patterns) > 0
-
-	def hasOnlyCareDir(self):
-		return len(self.only_care_dir_patterns) > 0
 
 	'''
 	pseudocode:
@@ -91,12 +72,8 @@ class TodoSearchEngine():
 			else
 				if has only care files:
 					only keep those files
-				else
-					remove ignored files
 
-				if has only care dirs:
-					only keep those dirs
-				else
+				if has ignored dirs:
 					remove ignored dirs
 
 				yeild rest of files
@@ -104,19 +81,17 @@ class TodoSearchEngine():
 	def walk(self):
 		for path_to_search in self.paths_to_search:
 			path_to_search = os.path.realpath(os.path.expanduser(os.path.abspath(path_to_search)))
+			
 			if os.path.exists(path_to_search):
 				if os.path.isfile(path_to_search):
 					yield path_to_search # if user indicated a file, that mean he/she want to scan that file, so just yield it
+				
 				for dirpath, dirnames, filenames in os.walk(path_to_search, topdown = True):
-					if self.hasOnlyCareFile():
-						filenames[:] = [name for name in filenames if self.isMatchUnixPatterns(name, self.only_care_file_patterns)]
-					else:
-						filenames[:] = self.removeIgnoredFileName(filenames)
+					if self.hasOnlyCareFiles():
+						filenames[:] = Util.filterByUnixPatterns(texts = filenames, patterns = self.only_care_file_patterns, keep_if_match = True)
 
-					if self.hasOnlyCareDir():
-						dirnames[:] = [name for name in dirnames if self.isMatchUnixPatterns(name, self.only_care_dir_patterns)]
-					else:
-						dirnames[:] = self.removeIgnoredDirName(dirnames)
+					if self.hasIgnoredDirs():
+						dirnames[:] = Util.filterByUnixPatterns(texts = dirnames, patterns = self.ignored_dir_patterns, keep_if_match = False)
 
 					for filename in filenames:
 						filepath = os.path.join(dirpath, filename)
