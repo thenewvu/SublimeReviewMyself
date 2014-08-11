@@ -34,6 +34,18 @@ class Util():
 
 		return filtered_texts
 
+	'''
+		Extract directory/file name from a path.
+		Ex:
+		Inputs:		'a/b/c/', 'a/b/c', '\\a\\b\\c', '\\a\\b\\c\\', 'a\\b\\c', 'a/b/../../a/b/c/', 'a/b/../../a/b/c'
+		Outputs:	'c', 'c', 'c', 'c', 'c', 'c', 'c'
+		Ref: http://stackoverflow.com/questions/8384737/python-extract-file-name-from-path-no-matter-what-the-os-path-format
+	'''
+	@staticmethod
+	def getBasenameFromPath(path):
+		head, tail = ntpath.split(path)
+		return tail or ntpath.basename(head)
+
 class Settings():
 	def __init__(self, view, setting_name):
 		self.default = sublime.load_settings("{setting_name}.sublime-settings".format(setting_name = setting_name))
@@ -49,8 +61,8 @@ class TodoSearchEngine():
 		self.paths_to_search = []
 		self.todo_filter = None
 		self.priority_filter = None
-		self.ignored_dir_patterns = [".svn", ".git", ".hg", "CVS"]
-		self.only_care_file_patterns = ["*.cpp", "*.py", ".c", "*.hpp", "*.h"]
+		self.ignored_dir_patterns = [".svn", ".git", ".hg", "CVS"] #TODO: unhardcode ignored_dir_patterns #p2
+		self.only_care_file_patterns = ["*.cpp", "*.py", ".c", "*.hpp", "*.h"] #TODO: unhardcode only_care_file_patterns #p2
 		self.counter = Counter()
 
 	def hasIgnoredDirs(self):
@@ -164,6 +176,8 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view = ResultView.get()
 		result_view.erase(edit, sublime.Region(0, result_view.size()))
 
+		#TODO: decorate result #p1
+
 		hr = "-" * 50 + "\n"
 		search_session_info = ""
 
@@ -182,9 +196,9 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		for index, result in enumerate(results, 1):
 			minimized_filepath = result["filepath"]
 			for path_to_search in paths_to_search:
-				minimized_filepath = minimized_filepath.replace(path_to_search, "")
+				minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search)) #TODO: is safe ? #p2
 
-			formatted_result = u'{index}. {filepath}:{linenum} => {todo}'.format(
+			formatted_result = u'{index}.\t{filepath}:{linenum} \t=> {todo}'.format(
 				index = index,
 				filepath = minimized_filepath,
 				linenum = result['linenum'],
@@ -199,7 +213,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 
 		result_view.add_regions('result_regions', result_regions, '')
 
-		region_to_result_dict = dict(('{0},{1}'.format(region.a, region.b), result) for region, result in zip(result_regions, results));
+		region_to_result_dict = dict(('{0},{1}'.format(region.a, region.b), result) for region, result in zip(result_regions, results))
 		result_view.settings().set('region_to_result_dict', region_to_result_dict)
 		sublime.active_window().focus_view(result_view)
 
