@@ -35,46 +35,93 @@ class TodoSearchEngine():
 		self.paths_to_search = []
 		self.todo_filter = None
 		self.priority_filter = None
-		self.exclude_patterns = ["*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico",
-								"*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", "*.pyc", "*.pyo", "*.exe",
-								"*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb",
-								"*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd",
-								"*.db", "*.sublime-workspace",
-								".svn", ".git", ".hg", "CVS"]
+		self.ignored_file_patterns = ["*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico",
+										"*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", "*.pyc", "*.pyo", "*.exe",
+										"*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb",
+										"*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd",
+										"*.db", "*.sublime-workspace"]
+		self.ignored_dir_patterns = [".svn", ".git", ".hg", "CVS"]
+		self.only_care_file_patterns = ["*.cpp"]
+		self.only_care_dir_patterns = []
 		self.counter = Counter()
 
-	def basename(self, path):
-		head, tail = ntpath.split(path)
-		return tail or ntpath.basename(head)
+	# '''
+	# 	Extract directory/file name from a path.
+	# 	Ex:
+	# 	'a/b/c/', 'a/b/c', '\\a\\b\\c', '\\a\\b\\c\\', 'a\\b\\c', 'a/b/../../a/b/c/', 'a/b/../../a/b/c'
+	# 	=> 'c', 'c', 'c', 'c', 'c', 'c', 'c'
+	# 	Ref: http://stackoverflow.com/questions/8384737/python-extract-file-name-from-path-no-matter-what-the-os-path-format
+	# '''
+	# def getBasename(self, path):
+	# 	head, tail = ntpath.split(path)
+	# 	return tail or ntpath.basename(head)
 
-	def isIgnoredName(self, name):
-		for pattern in self.exclude_patterns:
-			if fnmatch.fnmatch(name, pattern):
+	def isMatchUnixPatterns(self, text, patterns):
+		for pattern in patterns:
+			if fnmatch.fnmatch(text, pattern):
 				return True
 		return False
 
-	def filterNames(self, names):
+	def removeIgnoredFileName(self, names):
 		filtered_names = []
 		for name in names:
-			if not self.isIgnoredName(name):
+			if not self.isMatchUnixPatterns(name, self.ignored_file_patterns):
+				filtered_names.append(name)
+		return filtered_names
+		
+	def removeIgnoredDirName(self, names):
+		filtered_names = []
+		for name in names:
+			if not self.isMatchUnixPatterns(name, self.ignored_dir_patterns):
 				filtered_names.append(name)
 		return filtered_names
 
+	def hasOnlyCareFile(self):
+		return len(self.only_care_file_patterns) > 0
+
+	def hasOnlyCareDir(self):
+		return len(self.only_care_dir_patterns) > 0
+
+	'''
+	pseudocode:
+		each path in paths:
+			check exists
+			if is file path:
+				yeild it
+			else
+				if has only care files:
+					only keep those files
+				else
+					remove ignored files
+
+				if has only care dirs:
+					only keep those dirs
+				else
+					remove ignored dirs
+
+				yeild rest of files
+	'''
 	def walk(self):
 		for path_to_search in self.paths_to_search:
 			path_to_search = os.path.realpath(os.path.expanduser(os.path.abspath(path_to_search)))
 			if os.path.exists(path_to_search):
 				if os.path.isfile(path_to_search):
-					filename = self.basename(path_to_search)
-					if not self.isIgnoredName(filename):
-						yield path_to_search
+					yield path_to_search # if user indicated a file, that mean he/she want to scan that file, so just yield it
 				for dirpath, dirnames, filenames in os.walk(path_to_search, topdown = True):
-					dirnames[:] = self.filterNames(dirnames)
-					filenames[:] = self.filterNames(filenames)
+					if self.hasOnlyCareFile():
+						filenames[:] = [name for name in filenames if self.isMatchUnixPatterns(name, self.only_care_file_patterns)]
+					else:
+						filenames[:] = self.removeIgnoredFileName(filenames)
+
+					if self.hasOnlyCareDir():
+						dirnames[:] = [name for name in dirnames if self.isMatchUnixPatterns(name, self.only_care_dir_patterns)]
+					else:
+						dirnames[:] = self.removeIgnoredDirName(dirnames)
+
 					for filename in filenames:
 						filepath = os.path.join(dirpath, filename)
 						yield filepath
-	
+
 	def search(self):
 		for filepath in self.walk():
 			try:
