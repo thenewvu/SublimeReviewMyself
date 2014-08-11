@@ -104,23 +104,24 @@ class TodoSearchEngine():
 
 						todo = ""
 						if "todo" in match_groups:
-							todo = match_groups["todo"]
+							todo = str(match_groups["todo"]).strip()
 
-						match = self.priority_filter.search(todo)
+						if todo:
+							match = self.priority_filter.search(todo)
 
-						priority = 9999 #TODO: unhardcode max priority #p3
-						if match:
-							match_groups = match.groupdict()
-							if "priority" in match_groups:
-								priority = int(match_groups["priority"])
-								todo = todo.replace(match.group(0), "")
+							priority = 9999 #TODO: unhardcode max priority #p3
+							if match:
+								match_groups = match.groupdict()
+								if "priority" in match_groups:
+									priority = int(match_groups["priority"])
+									todo = todo.replace(match.group(0), "")
 
-						yield {
-							'filepath': filepath,
-							'linenum': linenum,
-							'todo': todo,
-							'priority': priority
-						}
+							yield {
+								'filepath': filepath,
+								'linenum': linenum,
+								'todo': todo,
+								'priority': priority
+							}
 
 			except Exception as e:
 				file_stream = None
@@ -179,9 +180,13 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_regions = []
 
 		for index, result in enumerate(results, 1):
+			minimized_filepath = result["filepath"]
+			for path_to_search in paths_to_search:
+				minimized_filepath = minimized_filepath.replace(path_to_search, "")
+
 			formatted_result = u'{index}. {filepath}:{linenum} => {todo}'.format(
 				index = index,
-				filepath = result["filepath"],
+				filepath = minimized_filepath,
 				linenum = result['linenum'],
 				todo = result["todo"])
 
@@ -227,7 +232,7 @@ class Counter():
 		self.stop_time = timeit.default_timer()
 
 	def getDeltaTime(self):
-		return self.stop_time - self.start_time
+		return round(self.stop_time - self.start_time, 2)
 
 	def increment(self):
 		with self.lock:
@@ -272,7 +277,7 @@ class ReviewMyselfCommand(sublime_plugin.TextCommand):
 		if mode == "auto":
 			self.view.run_command("review_myself_auto_mode")
 		elif mode == "manual":
-			#TODO: implement manual mode
+			#TODO: implement manual mode #p2
 			Util.status("manual mode is under construction!")
 		else:
 			Util.status("'{0}' mode is not supported yet! What matter with your settings ?".format(mode))
