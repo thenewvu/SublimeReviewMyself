@@ -38,8 +38,6 @@ class Settings():
 	def __init__(self, view, setting_name):
 		self.default = sublime.load_settings("{setting_name}.sublime-settings".format(setting_name = setting_name))
 		self.user = view.settings().get("{setting_name}".format(setting_name = setting_name), {})
-		print(self.default)
-		print(self.user)
 
 	def get(self, fieldName, defaultValue):
 		return self.user.get(fieldName, self.default.get(fieldName, defaultValue))
@@ -115,7 +113,7 @@ class TodoSearchEngine():
 							match_groups = match.groupdict()
 							if "priority" in match_groups:
 								priority = int(match_groups["priority"])
-								#TODO: remove priority tag from todo #p1
+								todo = todo.replace(match.group(0), "")
 
 						yield {
 							'filepath': filepath,
@@ -243,7 +241,6 @@ class ReviewMyselfImpl(sublime_plugin.TextCommand):
 		self.paths_to_search = paths
 		self.is_ignore_case = settings.get("is_ignore_case", True)
 		self.todo_patterns = settings.get("todo_patterns", [])
-		Util.log("vu.lethanh", self.todo_patterns)
 		self.priority_patterns = settings.get("priority_patterns", [])
 
 		self.search_engine = TodoSearchEngine()
