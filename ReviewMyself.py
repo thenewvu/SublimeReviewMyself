@@ -2,12 +2,11 @@ import sublime_plugin
 import sublime
 import os
 import threading
-import functools
 import fnmatch
 import re
-import sys
 import timeit
 import ntpath
+
 
 class Util():
 	@staticmethod
@@ -161,7 +160,8 @@ class ResultView():
 			result_view.settings().set('command_mode', True)
 			result_view.settings().set('word_wrap', False)
 			result_view.settings().set("line_numbers", False)
-			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.hidden-tmLanguage')
+			result_view.settings().set("color_scheme", "Packages/ReviewMyself/Dark.tmTheme")
+			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
 
 		return result_view
 
@@ -325,7 +325,7 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 		view_settings.set('selected_index', selected_index)
 		
 		selected_region = result_regions[selected_index]
-		self.view.add_regions('selected_region', [selected_region], 'selected', 'dot')
+		self.view.add_regions('selected_region', [selected_region], "selected", "", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL)
 		self.view.show(selected_region)
 
 class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):

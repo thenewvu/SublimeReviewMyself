@@ -1,0 +1,29 @@
+// [PackageDev] target_format: plist, ext: tmLanguage
+{
+	"name": "Review Myself",
+  	"scopeName": "text.review",
+  	"fileTypes": ["review"],
+  	"uuid": "2c40f3da-7149-4b92-8c5c-26dfa88b5084",
+
+  	"patterns":[
+		{
+			"match": "^([1-3]\\.)\\t(.+)(:\\d+)\\s\\t\\=\\>\\s(.+)",
+			"name": "review.todo",
+			"comment": "",
+			"captures": {
+				"1": {
+					"name": "review.todo.index"
+				},
+				"2": {
+					"name": "review.todo.filepath"
+				},
+				"3": {
+					"name": "review.todo.linenum"
+				},
+				"4": {
+					"name": "review.todo.text"
+				}
+			}
+		}
+  	]
+}
