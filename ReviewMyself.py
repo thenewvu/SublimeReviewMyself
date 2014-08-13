@@ -160,7 +160,7 @@ class ResultView():
 			result_view.settings().set('command_mode', True)
 			result_view.settings().set('word_wrap', False)
 			result_view.settings().set("line_numbers", False)
-			result_view.settings().set("color_scheme", "Packages/ReviewMyself/Dark.tmTheme") #TODO: unhardcode color_scheme setting #p3
+			result_view.settings().set("color_scheme", "Packages/ReviewMyself/Dark.tmTheme") #TODO: unhardcode color_scheme setting #p2
 			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
 
 		return result_view
@@ -200,7 +200,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		for index, result in enumerate(results, 1):
 			minimized_filepath = result["filepath"]
 			for path_to_search in paths_to_search:
-				minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search)) #TODO: is safe ? #p3
+				minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search)) #TODO: is safe ? #p2
 
 			formatted_result = u'{index:<5}{filepath}:{linenum:<5} => {priority}{todo}'.format(
 				index = "{0}.".format(index),
@@ -224,15 +224,15 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.settings().set("selected_index", -1)
 		result_view.run_command("review_myself_navigate_result", {"direction": "down"})
 
-		#TODO: sync usage text with user key map settings #p2
+		#TODO: sync usage text with user key map settings #p1
 		usage_text = ""
 		usage_text += "\n\n"
 		usage_text += "# Usage:\n"
 		usage_text += "#\t r = refresh result\n"
 		usage_text += "#\t j or down = next todo\n"
 		usage_text += "#\t k or up = previous todo\n"
+		usage_text += "#\t enter = goto todo location\n"
 		result_view.insert(edit, result_view.size(), usage_text)
-
 
 
 		#TODO: implement on the fly settings #p3
@@ -386,3 +386,4 @@ class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 		paths_to_search = view_settings.get("paths_to_search", [])
 
 		self.view.run_command("review_myself_impl", {"paths": paths_to_search})
+
