@@ -37,5 +37,12 @@
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		]
+	},
+	{
+		"keys": ["r"], "command": "review_myself_refresh_result",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		]
 	}
 ]

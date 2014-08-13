@@ -176,7 +176,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view = ResultView.get()
 		result_view.erase(edit, sublime.Region(0, result_view.size()))
 
-		#TODO: decorate result #p1
+		result_view.settings().set("paths_to_search", paths_to_search)
 
 		search_session_info = ""
 		search_session_info += "{0:12} [".format("# From:")
@@ -220,8 +220,8 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.settings().set("selected_index", -1)
 		result_view.run_command("review_myself_navigate_result", {"direction": "down"})
 
-		#TODO: add usage text #p2
-		#TODO: add on the fly settings #p2
+		#TODO: add usage text #p1
+		#TODO: add on the fly settings #p1
 		
 
 		sublime.active_window().focus_view(result_view)
@@ -359,5 +359,14 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 		result = region_to_result_dict['{0},{1}'.format(selected_region.a, selected_region.b)]
 		new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
 
-#TODO: implement refresh command #p1
+class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfRefreshResultCommand"
+
+	def run(self, edit):
+		view_settings = self.view.settings()
+		paths_to_search = view_settings.get("paths_to_search", [])
+
+		self.view.run_command("review_myself_impl", {"paths": paths_to_search})
+
+
 #TODO: implement goto by click command #p2
