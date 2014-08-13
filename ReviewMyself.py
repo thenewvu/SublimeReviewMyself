@@ -160,7 +160,7 @@ class ResultView():
 			result_view.settings().set('command_mode', True)
 			result_view.settings().set('word_wrap', False)
 			result_view.settings().set("line_numbers", False)
-			result_view.settings().set("color_scheme", "Packages/ReviewMyself/Dark.tmTheme") #TODO: unhardcode color_scheme setting #p2
+			result_view.settings().set("color_scheme", "Packages/ReviewMyself/ReviewMyself-NeonDark.hidden-tmTheme") #TODO: unhardcode color_scheme setting #p2
 			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
 
 		return result_view
