@@ -48,7 +48,7 @@ class Util():
 class Settings():
 	def __init__(self, view, setting_name):
 		self.default = sublime.load_settings("{setting_name}.sublime-settings".format(setting_name = setting_name))
-		self.user = view.settings().get("{setting_name}".format(setting_name = setting_name), {}) #TODO: test user settings #p1
+		self.user = view.settings().get("{setting_name}".format(setting_name = setting_name), {})
 
 	def get(self, fieldName, defaultValue):
 		return self.user.get(fieldName, self.default.get(fieldName, defaultValue))
@@ -149,7 +149,7 @@ class ResultView():
 	@staticmethod
 	def get():
 		active_window = sublime.active_window()
-		existed_result_view = [view for view in active_window.views() if view.name() == 'ReviewMyself' and view.is_scratch()]
+		existed_result_view = [view for view in active_window.views() if ResultView.isResultView(view)]
 		if existed_result_view:
 			result_view = existed_result_view[0]
 		else:
@@ -160,10 +160,14 @@ class ResultView():
 			result_view.settings().set('command_mode', True)
 			result_view.settings().set('word_wrap', False)
 			result_view.settings().set("line_numbers", False)
-			result_view.settings().set("color_scheme", "Packages/ReviewMyself/Dark.tmTheme")
+			result_view.settings().set("color_scheme", "Packages/ReviewMyself/Dark.tmTheme") #TODO: unhardcode color_scheme setting #p3
 			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
 
 		return result_view
+
+	@staticmethod
+	def isResultView(view):
+		return view.settings().get("review_myself_view", False) == True
 
 class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 	def run(self, edit, **args):
@@ -196,7 +200,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		for index, result in enumerate(results, 1):
 			minimized_filepath = result["filepath"]
 			for path_to_search in paths_to_search:
-				minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search)) #TODO: is safe ? #p2
+				minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search)) #TODO: is safe ? #p3
 
 			formatted_result = u'{index:<5}{filepath}:{linenum:<5} => {priority}{todo}'.format(
 				index = "{0}.".format(index),
@@ -220,7 +224,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.settings().set("selected_index", -1)
 		result_view.run_command("review_myself_navigate_result", {"direction": "down"})
 
-		#TODO: sync with user key map settings #p3
+		#TODO: sync usage text with user key map settings #p2
 		usage_text = ""
 		usage_text += "\n\n"
 		usage_text += "# Usage:\n"
@@ -231,7 +235,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 
 
 
-		#TODO: add on the fly settings #p3
+		#TODO: implement on the fly settings #p3
 		
 
 		sublime.active_window().focus_view(result_view)
@@ -314,10 +318,10 @@ class ReviewMyselfCommand(sublime_plugin.TextCommand):
 		if mode == "auto":
 			self.view.run_command("review_myself_auto_mode")
 		elif mode == "manual":
-			#TODO: implement manual mode #p2
-			Util.status("manual mode is under construction!")
+			#TODO: implement manual mode #p3
+			Util.status("ReviewMyself: Manual mode is under construction!")
 		else:
-			Util.status("'{0}' mode is not supported yet! What matter with your settings ?".format(mode))
+			Util.status("ReviewMyself: '{0}' mode is not supported yet! What matter with your settings ?".format(mode))
 
 class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfNavigateResultCommand"
@@ -337,7 +341,7 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 		elif direction == "down":
 			selected_index += 1
 		else:
-			Util.status("Incorrect navigation direction. Check settings!")
+			Util.status("ReviewMyself: Incorrect navigation direction. Check settings!")
 			return
 
 		if selected_index < 0:
@@ -364,14 +368,15 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 
 		selected_index = int(view_settings.get("selected_index", -1))
 		if selected_index < 0 or selected_index > result_region_cout - 1:
-			Util.status("Select a todo first!")
+			Util.status("ReviewMyself: Select a todo first!")
 			return;
 
 		selected_region = result_regions[selected_index]
 		region_to_result_dict = self.view.settings().get('region_to_result_dict')
 
-		result = region_to_result_dict['{0},{1}'.format(selected_region.a, selected_region.b)]
-		new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
+		result = region_to_result_dict.get('{0},{1}'.format(selected_region.a, selected_region.b)) # use dict.get() instead dict[] to avoid KeyError exception
+		if result is not None:
+			new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
 
 class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfRefreshResultCommand"
@@ -381,6 +386,3 @@ class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 		paths_to_search = view_settings.get("paths_to_search", [])
 
 		self.view.run_command("review_myself_impl", {"paths": paths_to_search})
-
-
-#TODO: implement goto by click command #p1

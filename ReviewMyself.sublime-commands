@@ -5,12 +5,5 @@
         "args": {
         	"mode": "auto"
         }
-    },
-    {
-    	"caption": "ReviewMyself: Manual",
-    	"command": "review_myself",
-    	"args": {
-    		"mode": "manual"
-    	}
     }
 ]
