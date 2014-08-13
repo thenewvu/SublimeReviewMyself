@@ -7,5 +7,5 @@
 	],
 	"is_ignore_case": true,
 	"ignored_dir_patterns": [".svn", ".git", ".hg", "CVS"],
-	"only_care_file_patterns": ["*.cpp", "*.c", "*.hpp", "*.h", "*.py", "*.js", "*.java", "*.lua"]
+	"only_care_file_patterns": ["*.cpp", "*.c", "*.hpp", "*.h", "*.py", "*.js", "*.java", "*.lua", "*.md"]
 }
