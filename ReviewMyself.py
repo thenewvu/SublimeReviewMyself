@@ -60,8 +60,8 @@ class TodoSearchEngine():
 		self.paths_to_search = []
 		self.todo_filter = None
 		self.priority_filter = None
-		self.ignored_dir_patterns = [".svn", ".git", ".hg", "CVS"] #TODO: unhardcode ignored_dir_patterns #p2
-		self.only_care_file_patterns = ["*.cpp", "*.py", ".c", "*.hpp", "*.h"] #TODO: unhardcode only_care_file_patterns #p2
+		self.ignored_dir_patterns = [".svn", ".git", ".hg", "CVS"] #TODO: unhardcode ignored_dir_patterns #p1
+		self.only_care_file_patterns = ["*.cpp", "*.py", ".c", "*.hpp", "*.h"] #TODO: unhardcode only_care_file_patterns #p1
 		self.counter = Counter()
 
 	def hasIgnoredDirs(self):
@@ -220,8 +220,18 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.settings().set("selected_index", -1)
 		result_view.run_command("review_myself_navigate_result", {"direction": "down"})
 
-		#TODO: add usage text #p1
-		#TODO: add on the fly settings #p1
+		#TODO: sync with user key map settings #p3
+		usage_text = ""
+		usage_text += "\n\n"
+		usage_text += "# Usage:\n"
+		usage_text += "#\t r = refresh result\n"
+		usage_text += "#\t j or down = next todo\n"
+		usage_text += "#\t k or up = previous todo\n"
+		result_view.insert(edit, result_view.size(), usage_text)
+
+
+
+		#TODO: add on the fly settings #p3
 		
 
 		sublime.active_window().focus_view(result_view)
