@@ -216,6 +216,14 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 
 		region_to_result_dict = dict(('{0},{1}'.format(region.a, region.b), result) for region, result in zip(result_regions, results))
 		result_view.settings().set('region_to_result_dict', region_to_result_dict)
+		
+		result_view.settings().set("selected_index", -1)
+		result_view.run_command("review_myself_navigate_result", {"direction": "down"})
+
+		#TODO: add usage text #p2
+		#TODO: add on the fly settings #p2
+		
+
 		sublime.active_window().focus_view(result_view)
 
 class SearchThread(threading.Thread):
@@ -350,3 +358,6 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 
 		result = region_to_result_dict['{0},{1}'.format(selected_region.a, selected_region.b)]
 		new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
+
+#TODO: implement refresh command #p1
+#TODO: implement goto by click command #p2
