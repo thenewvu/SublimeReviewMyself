@@ -48,7 +48,7 @@ class Util():
 class Settings():
 	def __init__(self, view, setting_name):
 		self.default = sublime.load_settings("{setting_name}.sublime-settings".format(setting_name = setting_name))
-		self.user = view.settings().get("{setting_name}".format(setting_name = setting_name), {})
+		self.user = view.settings().get("{setting_name}".format(setting_name = setting_name), {}) #TODO: test user settings #p1
 
 	def get(self, fieldName, defaultValue):
 		return self.user.get(fieldName, self.default.get(fieldName, defaultValue))
@@ -60,8 +60,8 @@ class TodoSearchEngine():
 		self.paths_to_search = []
 		self.todo_filter = None
 		self.priority_filter = None
-		self.ignored_dir_patterns = [".svn", ".git", ".hg", "CVS"] #TODO: unhardcode ignored_dir_patterns #p1
-		self.only_care_file_patterns = ["*.cpp", "*.py", ".c", "*.hpp", "*.h"] #TODO: unhardcode only_care_file_patterns #p1
+		self.ignored_dir_patterns = []
+		self.only_care_file_patterns = []
 		self.counter = Counter()
 
 	def hasIgnoredDirs(self):
@@ -280,11 +280,15 @@ class ReviewMyselfImpl(sublime_plugin.TextCommand):
 		self.is_ignore_case = settings.get("is_ignore_case", True)
 		self.todo_patterns = settings.get("todo_patterns", [])
 		self.priority_patterns = settings.get("priority_patterns", [])
+		self.ignored_dir_patterns = settings.get("ignored_dir_patterns", [])
+		self.only_care_file_patterns = settings.get("only_care_file_patterns", [])
 
 		self.search_engine = TodoSearchEngine()
 		self.search_engine.paths_to_search = self.paths_to_search
 		self.search_engine.todo_filter = re.compile("|".join(self.todo_patterns), re.IGNORECASE if self.is_ignore_case else 0)
 		self.search_engine.priority_filter = re.compile("|".join(self.priority_patterns), re.IGNORECASE if self.is_ignore_case else 0)
+		self.search_engine.ignored_dir_patterns = self.ignored_dir_patterns
+		self.search_engine.only_care_file_patterns = self.only_care_file_patterns
 
 		self.search_thread = SearchThread(self.search_engine, self.onSearchingDone)
 		self.search_thread.start()
@@ -379,4 +383,4 @@ class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 		self.view.run_command("review_myself_impl", {"paths": paths_to_search})
 
 
-#TODO: implement goto by click command #p2
+#TODO: implement goto by click command #p1
