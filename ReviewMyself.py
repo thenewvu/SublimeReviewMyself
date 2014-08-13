@@ -178,16 +178,16 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 
 		#TODO: decorate result #p1
 
-		hr = "-" * 50 + "\n"
 		search_session_info = ""
-
-		search_session_info += hr
-		search_session_info += "Searched in:\n"
-		for path_to_search in paths_to_search:
-			search_session_info += "\t{0}\n".format(path_to_search)
-		search_session_info += "Processed file count: {0}\n".format(processed_file_count)
-		search_session_info += "Processed time: {0}s\n".format(processed_time)
-		search_session_info += hr
+		search_session_info += "{0:12} [".format("# From:")
+		for index, path_to_search in enumerate(paths_to_search, 1):
+			search_session_info += "{0}".format(Util.getBasenameFromPath(path_to_search))
+			if index != len(paths_to_search):
+				search_session_info += ", "
+		search_session_info += "]\n"
+		search_session_info += "{0:12} {1}\n".format("# No.Files:", processed_file_count)
+		search_session_info += "{0:12} {1}s\n".format("# Time:", processed_time)
+		search_session_info += "\n\n"
 
 		result_view.insert(edit, result_view.size(), search_session_info)
 		
@@ -198,10 +198,11 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 			for path_to_search in paths_to_search:
 				minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search)) #TODO: is safe ? #p2
 
-			formatted_result = u'{index}.\t{filepath}:{linenum} \t=> {todo}'.format(
-				index = index,
+			formatted_result = u'{index:<5}{filepath}:{linenum:<5} => {priority}{todo}'.format(
+				index = "{0}.".format(index),
 				filepath = minimized_filepath,
 				linenum = result['linenum'],
+				priority = "p{0}.".format(result["priority"]) if result["priority"] != 9999 else "", #TODO: unhardcode max priority #p3
 				todo = result["todo"])
 
 			result_region_start = result_view.size()

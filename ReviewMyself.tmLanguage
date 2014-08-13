@@ -28,18 +28,39 @@
 					<key>name</key>
 					<string>review.todo.linenum</string>
 				</dict>
-				<key>4</key>
-				<dict>
-					<key>name</key>
-					<string>review.todo.text</string>
-				</dict>
 			</dict>
 			<key>comment</key>
 			<string></string>
 			<key>match</key>
-			<string>^([1-3]\.)\t(.+)(:\d+)\s\t\=\&gt;\s(.+)</string>
+			<string>^(\d+\.)\s+(.+)(:\d+)</string>
 			<key>name</key>
-			<string>review.todo</string>
+			<string>review.todo.location</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\=\&gt;\s*(p1\.\s*.+)$</string>
+			<key>name</key>
+			<string>review.todo.todo.p1</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\=\&gt;\s*(p2\.\s*.+)$</string>
+			<key>name</key>
+			<string>review.todo.todo.p2</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\=\&gt;\s*(p3\.\s*.+)$</string>
+			<key>name</key>
+			<string>review.todo.todo.p3</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string></string>
+			<key>match</key>
+			<string>^#.*</string>
+			<key>name</key>
+			<string>review.comment</string>
 		</dict>
 	</array>
 	<key>scopeName</key>
