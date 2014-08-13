@@ -1,37 +1,49 @@
 ## Introduction
 
-This plugin is a fork from [TodoReview](https://sublime.wbond.net/packages/TodoReview) by [@jonathandelgado](https://sublime.wbond.net/browse/authors/jonathandelgado).
+__A in-source todo manage plugin for Subline Text 3.__
 
-I made it faster and add some features:
+List todos in your project, help you always know what should do next.
 
-- refresh result
-- customizable only care file name patterns
-- customizable directory name patterns
-- result is easier to understand
-- easier to modify todo and priority patterns
-- easier to expend (for someone want to contribute or fork it)
+## Take a look
 
-Some screenshots:
+![ReviewMyself Result](http://i.imgur.com/55Wnh67.png "A bird's view on the project")
 
-![ReviewMyself Result](http://i.imgur.com/55Wnh67.png)
-
-![ReviewMyself Settings](http://i.imgur.com/CB2OVYY.png)
+![ReviewMyself Settings](http://i.imgur.com/CB2OVYY.png "Settings")
 
 ## Usage
 
-__Write todo__:
+### How to take a todo
 
-Something like:
+Simple as that:
 
     TODO: write a better usage! #p1
 
-    #p1 = priority 1
+__#p1__ = priority 1
 
-__Scan todo__, 2 ways:
+By default, ReviewMyself only supports priority number from 1 to 3. I don't think we need more than that, but it depend on you, take a look at Customize.
 
-- Ctrl + Shift + P => ReviewMyself: Folders in Project
-- Right click on a file/folder in side bar => ReviewMyself
+### Get a bird's view on the project
+
+What's a bird's view ? Some thing like that:
+
+![ReviewMyself Result](http://i.imgur.com/55Wnh67.png "A bird's view on the project")
+
+There are 2 ways to do that:
+
+- Ctrl + Shift + P, then type and enter __ReviewMyself: Folders in Project__
+- Right click on a file/folder in side bar => choose __ReviewMyself__
 
 ## Customize
 
-TODO: write customize tutorial #p1
+The settings are self-documenting, so just go to Preferences -> Packages Settings -> ReviewMyself, and tweak it.
+
+## References
+
+- [TodoReview](https://sublime.wbond.net/packages/TodoReview) by [jonathandelgado](https://sublime.wbond.net/browse/authors/jonathandelgado).
+- http://stackoverflow.com/questions/8384737/python-extract-file-name-from-path-no-matter-what-the-os-path-format
+- [Theme - Farzher](https://sublime.wbond.net/packages/Theme%20-%20Farzher) by [farzher](https://sublime.wbond.net/browse/authors/farzher)
+- Many other sources
+
+## Licenses
+
+[The MIT License (MIT)](https://github.com/thenewvu/SublimeReviewMyself/blob/master/LICENSE)
