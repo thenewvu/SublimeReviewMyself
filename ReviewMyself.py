@@ -366,12 +366,24 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 		if result_region_cout <= 0:
 			return
 
-		selected_index = int(view_settings.get("selected_index", -1))
-		if selected_index < 0 or selected_index > result_region_cout - 1:
-			Util.status("ReviewMyself: Select a todo first!")
-			return;
+		selected_region = None
 
-		selected_region = result_regions[selected_index]
+		# process select by click
+		if self.view.sel():
+			selected_region = self.view.line(self.view.sel()[0].end())
+			if selected_region in result_regions:
+				self.view.add_regions('selected_region', [selected_region], "selected", "", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL)
+				self.view.show(selected_region)
+			else:
+				selected_region = None
+
+		if selected_region is None:
+			selected_index = int(view_settings.get("selected_index", -1))
+			if selected_index < 0 or selected_index > result_region_cout - 1:
+				Util.status("ReviewMyself: Select a todo first!")
+				return;
+			selected_region = result_regions[selected_index]
+
 		region_to_result_dict = self.view.settings().get('region_to_result_dict')
 
 		result = region_to_result_dict.get('{0},{1}'.format(selected_region.a, selected_region.b)) # use dict.get() instead dict[] to avoid KeyError exception
