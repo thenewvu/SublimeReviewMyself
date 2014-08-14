@@ -5,5 +5,9 @@
         "args": {
         	"mode": "auto"
         }
+    },
+    {
+        "caption": "ReviewMyself: Current File",
+        "command": "review_myself_review_current_file"
     }
 ]

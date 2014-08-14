@@ -388,5 +388,17 @@ class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 
 		self.view.run_command("review_myself_impl", {"paths": paths_to_search})
 
-#TODO: implement review current file command #p1
+class ReviewMyselfReviewCurrentFileCommand(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfReviewCurrentFileCommand"
+
+	def run(self, edit):
+		active_window = sublime.active_window()
+		active_view = active_window.active_view()
+
+		if active_view:
+			file_name = active_view.file_name()
+			if file_name:
+				self.view.run_command("review_myself_impl", {"paths": [file_name]})
+
+
 #TODO: process free selection #p1
