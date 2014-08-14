@@ -160,7 +160,7 @@ class ResultView():
 			result_view.settings().set('command_mode', True)
 			result_view.settings().set('word_wrap', False)
 			result_view.settings().set("line_numbers", False)
-			result_view.settings().set("color_scheme", "Packages/ReviewMyself/ReviewMyself-NeonDark.hidden-tmTheme") #TODO: unhardcode color_scheme setting #p2
+			result_view.settings().set("color_scheme", "Packages/ReviewMyself/ReviewMyself-NeonDark.hidden-tmTheme") #TODO: unhardcode color_scheme setting #p3
 			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
 
 		return result_view
@@ -200,7 +200,8 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		for index, result in enumerate(results, 1):
 			minimized_filepath = result["filepath"]
 			for path_to_search in paths_to_search:
-				minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search)) #TODO: is safe ? #p2
+				if minimized_filepath.startswith(path_to_search):
+					minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search))
 
 			formatted_result = u'{index:<5}{filepath}:{linenum:<5} => {priority}{todo}'.format(
 				index = "{0}.".format(index),
@@ -224,7 +225,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.settings().set("selected_index", -1)
 		result_view.run_command("review_myself_navigate_result", {"direction": "down"})
 
-		#TODO: sync usage text with user key map settings #p1
+		#TODO: sync usage text with user key map settings #p2
 		usage_text = ""
 		usage_text += "\n\n"
 		usage_text += "# Usage:\n"
@@ -235,7 +236,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.insert(edit, result_view.size(), usage_text)
 
 
-		#TODO: implement on the fly settings #p3
+		#TODO: implement on the fly settings #p2
 		
 
 		sublime.active_window().focus_view(result_view)
@@ -387,3 +388,5 @@ class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 
 		self.view.run_command("review_myself_impl", {"paths": paths_to_search})
 
+#TODO: implement review current file command #p1
+#TODO: process free selection #p1
