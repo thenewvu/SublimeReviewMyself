@@ -233,6 +233,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t j or down = next todo\n"
 		usage_text += "#\t k or up = previous todo\n"
 		usage_text += "#\t enter = goto todo location\n"
+		usage_text += "#\t click, then s = select todo\n"
 		result_view.insert(edit, result_view.size(), usage_text)
 
 
@@ -400,5 +401,22 @@ class ReviewMyselfReviewCurrentFileCommand(sublime_plugin.TextCommand):
 			if file_name:
 				self.view.run_command("review_myself_impl", {"paths": [file_name]})
 
+class ReviewMyselfSelectResultCommand(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfSelectResultCommand"
 
-#TODO: process free selection #p1
+	def run(self, edit):
+		view_settings = self.view.settings()
+		result_regions = self.view.get_regions("result_regions")
+		result_region_cout = len(result_regions)
+
+		if result_region_cout <= 0:
+			return
+
+		if self.view.sel():
+			selected_region = self.view.line(self.view.sel()[0].end())
+			if selected_region in result_regions:
+				selected_index = result_regions.index(selected_region)
+				view_settings.set('selected_index', selected_index)
+		
+				self.view.add_regions('selected_region', [selected_region], "selected", "", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL)
+				self.view.show(selected_region)
