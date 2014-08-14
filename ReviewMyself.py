@@ -149,19 +149,19 @@ class ResultView():
 	@staticmethod
 	def get():
 		active_window = sublime.active_window()
-		existed_result_view = [view for view in active_window.views() if ResultView.isResultView(view)]
-		if existed_result_view:
-			result_view = existed_result_view[0]
-		else:
-			result_view = active_window.new_file()
-			result_view.set_name('ReviewMyself')
-			result_view.set_scratch(True)
-			result_view.settings().set('review_myself_view', True)
-			result_view.settings().set('command_mode', True)
-			result_view.settings().set('word_wrap', False)
-			result_view.settings().set("line_numbers", False)
-			result_view.settings().set("color_scheme", "Packages/ReviewMyself/ReviewMyself-NeonDark.hidden-tmTheme") #TODO: unhardcode color_scheme setting #p3
-			result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
+		for view in active_window.views():
+			if ResultView.isResultView(view):
+				return view
+
+		result_view = active_window.new_file()
+		result_view.set_name('ReviewMyself')
+		result_view.set_scratch(True)
+		result_view.settings().set('review_myself_view', True)
+		result_view.settings().set('command_mode', True)
+		result_view.settings().set('word_wrap', False)
+		result_view.settings().set("line_numbers", False)
+		result_view.settings().set("color_scheme", "Packages/ReviewMyself/ReviewMyself-NeonDark.hidden-tmTheme") #TODO: unhardcode color_scheme setting #p1
+		result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
 
 		return result_view
 
@@ -237,7 +237,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.insert(edit, result_view.size(), usage_text)
 
 
-		#TODO: implement on the fly settings #p2
+		#TODO: implement on the fly settings #p1
 		
 
 		sublime.active_window().focus_view(result_view)
