@@ -1,2 +1,3 @@
 * fix wrong color scheme and language syntax file paths (issue #1). Thanks @noma4i and @realmikebutler.
 + add install and update messages
+- remove unnecessary items in overlay menu file 
