@@ -162,7 +162,7 @@ class ResultView():
 		result_view.settings().set("line_numbers", False)
 		settings = Settings(result_view, "ReviewMyself")
 		result_view.settings().set("color_scheme", settings.get("color_scheme", ""))
-		result_view.assign_syntax('Packages/ReviewMyself/ReviewMyself.tmLanguage')
+		result_view.assign_syntax(r"Packages/Review Myself/ReviewMyself.tmLanguage")
 
 		return result_view
 
