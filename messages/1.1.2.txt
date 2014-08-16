@@ -1,0 +1,17 @@
+* add missing in-source license information
+
+Sorry to @jonathandelgado, who developed TodoReview plugin.
+I thought that writing reference information in README was enought.
+
+It's my bad!
+You can see that I respected sources which I referred from (include yours) by writing them in README,
+moreover I even did not write any my author-related information in my sources.
+
+Those above things, I hope, proved that I respect your work, also the authors of SublimeTODO (which TodoReview is forked from).
+
+I forked from yours and developed this plugin myself because I need some features to serve my work.
+When looking for your repository at Github, I seen that you didn't commit any change from 3 months ago.
+So I thought that your plugin was discontinued.
+
+Again, I'm sorry. Hope you accept my apology and allow me contribute TodoReview with you.
+Thanks for reading!
