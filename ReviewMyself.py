@@ -1,3 +1,6 @@
+# This is a fork of TodoReview by @jonathandelgado.
+# Also thanks to @robcowie and @dnatag, who developed SublimeTODO, which TodoReview forked from.
+
 import sublime_plugin
 import sublime
 import os
