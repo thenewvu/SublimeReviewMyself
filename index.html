@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Review Myself by thenewvu</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Review Myself</h1>
+        <p>An in-source todo manage plugin for Subline Text 3, list todos in your sources, help you always know what should do next.</p>
+
+        <p class="view"><a href="https://github.com/thenewvu/SublimeReviewMyself">View the Project on GitHub <small>thenewvu/SublimeReviewMyself</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/thenewvu/SublimeReviewMyself/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/thenewvu/SublimeReviewMyself/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/thenewvu/SublimeReviewMyself">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p><strong>An in-source todo manage plugin for Subline Text 3, list todos in your sources, help you always know what should do next.</strong></p>
+
+<h2>
+<a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h2>
+
+<p><img src="http://i.imgur.com/55Wnh67.png" alt="Review Myself Result" title="Review Myself - Result"></p>
+
+<h2>
+<a name="setup" class="anchor" href="#setup"><span class="octicon octicon-link"></span></a>Setup</h2>
+
+<p>By default, Review Myself has this default settings:</p>
+
+<pre><code>{
+    "todo_patterns": [
+        "TODO\\s*:+\\s*(?P&lt;todo&gt;.*)$"
+    ],
+    "priority_patterns": [
+        "#p(?P&lt;priority&gt;[1-3])"
+    ],
+    "is_ignore_case": true,
+    "ignored_dir_patterns": [".svn", ".git", ".hg", "CVS"],
+    "only_care_file_patterns": ["*.cpp", "*.c", "*.h", "*.py", "*.js", "*.md"],
+    "color_scheme": "Packages/Review Myself/ReviewMyself-NeonDark.hidden-tmTheme"
+}
+</code></pre>
+
+<p>To tweak them, go to Preferences -&gt; Package Settings -&gt; Review Myself -&gt; Settings - User, ST will open a <strong>user setting file</strong> for you, put your settings there and save it.</p>
+
+<h2>
+<a name="how-to-take-a-todo-" class="anchor" href="#how-to-take-a-todo-"><span class="octicon octicon-link"></span></a>How to take a todo ?</h2>
+
+<p>Simple as this:</p>
+
+<pre><code>TODO: the highest priority todo, should be done right now #p1
+TODO: when p1 todos are clear, this will be a p1 #p2
+TODO: another p1 candidate todo #p2
+TODO: take a look in the tomorrow morning, it's ok :D #p3
+</code></pre>
+
+<p>By default, ReviewMyself only supports priority number from 1 to 3. I don't think we need more than that, but you can customize it (just increment the number in the priority pattern).</p>
+
+<h2>
+<a name="how-list-todos-" class="anchor" href="#how-list-todos-"><span class="octicon octicon-link"></span></a>How list todos ?</h2>
+
+<p>To list todos in the current file:</p>
+
+<pre><code>Ctrl + Shift + P, then enter command: ReviewMyself: Current File
+</code></pre>
+
+<p>To list todos in a file or a folder in side bar:</p>
+
+<pre><code>Right click on the file or the folder =&gt; choose ReviewMyself
+</code></pre>
+
+<p>To list todos in the current Sublime Text project:</p>
+
+<pre><code>Ctrl + Shift + P, then enter command: ReviewMyself: Folders in Project
+</code></pre>
+
+<h2>
+<a name="tweak-the-color-scheme" class="anchor" href="#tweak-the-color-scheme"><span class="octicon octicon-link"></span></a>Tweak the color scheme</h2>
+
+<p>Download <a href="https://github.com/thenewvu/SublimeReviewMyself/blob/master/ReviewMyself-NeonDark.hidden-tmTheme">the default color scheme file</a>.</p>
+
+<p>Tweak then put it in your User folder. <a href="https://sublime.wbond.net/packages/Color%20Highlighter">Color Highlighter</a> will help you tweak color easily.</p>
+
+<p>Add this line to your Review Myself user setting file (Preferences -&gt; Package Settings -&gt; Review Myself -&gt; Settings - User):</p>
+
+<pre><code>{
+    "color_scheme": "Packages/User/ReviewMyself-NeonDark.hidden-tmTheme"
+}
+</code></pre>
+
+<h2>
+<a name="get-involved-" class="anchor" href="#get-involved-"><span class="octicon octicon-link"></span></a>Get involved ?</h2>
+
+<p>If have any issue, please post here: <a href="https://github.com/thenewvu/SublimeReviewMyself/issues">https://github.com/thenewvu/SublimeReviewMyself/issues</a></p>
+
+<p>If you want to fork or contribute: <a href="https://github.com/thenewvu/SublimeReviewMyself/">https://github.com/thenewvu/SublimeReviewMyself/</a></p>
+
+<p>If you want to buy some coffee for me: <a href="https://www.gittip.com/thenewvu/">https://www.gittip.com/thenewvu/</a></p>
+
+<h2>
+<a name="references" class="anchor" href="#references"><span class="octicon octicon-link"></span></a>References</h2>
+
+<ul>
+<li>This is a fork from <a href="https://sublime.wbond.net/packages/TodoReview">TodoReview</a> by <a href="https://sublime.wbond.net/browse/authors/jonathandelgado">jonathandelgado</a>.</li>
+<li>GetBasenameFromPath function come from <a href="http://stackoverflow.com/questions/8384737/python-extract-file-name-from-path-no-matter-what-the-os-path-format">http://stackoverflow.com/questions/8384737/python-extract-file-name-from-path-no-matter-what-the-os-path-format</a>
+</li>
+<li>Color scheme is based on <a href="https://sublime.wbond.net/packages/Theme%20-%20Farzher">Theme - Farzher</a> by <a href="https://sublime.wbond.net/browse/authors/farzher">farzher</a>
+</li>
+<li>Many other sources</li>
+</ul><h2>
+<a name="licenses" class="anchor" href="#licenses"><span class="octicon octicon-link"></span></a>Licenses</h2>
+
+<p><a href="https://github.com/thenewvu/SublimeReviewMyself/blob/master/LICENSE">The MIT License (MIT)</a></p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/thenewvu">thenewvu</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
