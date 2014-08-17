@@ -1,0 +1,5 @@
++ update LICENSE
++ update README
++ add 'how to use' link to overlay menu file
+- remove some default only care file patterns setting
++ change install message
