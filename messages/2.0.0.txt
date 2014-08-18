@@ -1,0 +1,3 @@
++ Change all key map, more convenient.
++ Context panel.
++ Editing right in context panel.
