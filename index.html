@@ -1,43 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
     <title>Review Myself by thenewvu</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
   </head>
+
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/thenewvu/SublimeReviewMyself">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/thenewvu/SublimeReviewMyself/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/thenewvu/SublimeReviewMyself/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
 
-    <div class="wrapper">
+    <header>
+      <div class="container">
+        <h1>Review Myself</h1>
+        <h2>An in-source todo manage plugin for Subline Text 3, list todos in your sources, help you always know what should do next.</h2>
 
-      <section>
-        <div id="title">
-          <h1>Review Myself</h1>
-          <p>An in-source todo manage plugin for Subline Text 3, list todos in your sources, help you always know what should do next.</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/thenewvu">thenewvu</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
+        <section id="downloads">
+          <a href="https://github.com/thenewvu/SublimeReviewMyself/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/thenewvu/SublimeReviewMyself/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/thenewvu/SublimeReviewMyself" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
 
+    <div class="container">
+      <section id="main_content">
         <h2>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
 
@@ -46,7 +36,16 @@
 <h2>
 <a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h2>
 
-<p><img src="http://i.imgur.com/55Wnh67.png" alt="Review Myself Result" title="Review Myself - Result"></p>
+<p><img src="http://i.imgur.com/D3nZuP5.png" alt="Review Myself Result" title="Review Myself - Result"></p>
+
+<h2>
+<a name="whats-new-in-review-myself-v2-" class="anchor" href="#whats-new-in-review-myself-v2-"><span class="octicon octicon-link"></span></a>What's new in Review Myself v2 ?</h2>
+
+<ul>
+<li>Change all key map, more convenient.</li>
+<li>Context panel</li>
+<li>Editing right in context panel</li>
+</ul><p><img src="http://i.imgur.com/Ls8ZMJe.png" alt="Review Myself Result" title="Review Myself - Context Panel"></p>
 
 <h2>
 <a name="setup" class="anchor" href="#setup"><span class="octicon octicon-link"></span></a>Setup</h2>
@@ -63,7 +62,8 @@
     "is_ignore_case": true,
     "ignored_dir_patterns": [".svn", ".git", ".hg", "CVS"],
     "only_care_file_patterns": ["*.cpp", "*.c", "*.h", "*.py", "*.js", "*.md"],
-    "color_scheme": "Packages/Review Myself/ReviewMyself-NeonDark.hidden-tmTheme"
+    "color_scheme": "Packages/Review Myself/ReviewMyself-NeonDark.hidden-tmTheme",
+    "auto_show_context": true
 }
 </code></pre>
 
@@ -83,7 +83,7 @@ TODO: take a look in the tomorrow morning, it's ok :D #p3
 <p>By default, ReviewMyself only supports priority number from 1 to 3. I don't think we need more than that, but you can customize it (just increment the number in the priority pattern).</p>
 
 <h2>
-<a name="how-list-todos-" class="anchor" href="#how-list-todos-"><span class="octicon octicon-link"></span></a>How list todos ?</h2>
+<a name="how-to-list-todos-" class="anchor" href="#how-to-list-todos-"><span class="octicon octicon-link"></span></a>How to list todos ?</h2>
 
 <p>To list todos in the current file:</p>
 
@@ -92,7 +92,7 @@ TODO: take a look in the tomorrow morning, it's ok :D #p3
 
 <p>To list todos in a file or a folder in side bar:</p>
 
-<pre><code>Right click on the file or the folder =&gt; choose ReviewMyself
+<pre><code>Right click on the file or the folder, then choose ReviewMyself
 </code></pre>
 
 <p>To list todos in the current Sublime Text project:</p>
@@ -117,7 +117,7 @@ TODO: take a look in the tomorrow morning, it's ok :D #p3
 <h2>
 <a name="get-involved-" class="anchor" href="#get-involved-"><span class="octicon octicon-link"></span></a>Get involved ?</h2>
 
-<p>If have any issue, please post here: <a href="https://github.com/thenewvu/SublimeReviewMyself/issues">https://github.com/thenewvu/SublimeReviewMyself/issues</a></p>
+<p>If you meet any issue, please post here: <a href="https://github.com/thenewvu/SublimeReviewMyself/issues">https://github.com/thenewvu/SublimeReviewMyself/issues</a></p>
 
 <p>If you want to fork or contribute: <a href="https://github.com/thenewvu/SublimeReviewMyself/">https://github.com/thenewvu/SublimeReviewMyself/</a></p>
 
@@ -138,9 +138,8 @@ TODO: take a look in the tomorrow morning, it's ok :D #p3
 
 <p><a href="https://github.com/thenewvu/SublimeReviewMyself/blob/master/LICENSE">The MIT License (MIT)</a></p>
       </section>
-
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+
     
   </body>
 </html>
