@@ -229,7 +229,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		result_view.settings().set("selected_index", -1)
 		result_view.run_command("review_myself_navigate_result", {"direction": "down"})
 
-		#TODO: sync usage text with user key map settings #p2
+		#TODO: sync usage text with user key map settings #p3
 		usage_text = ""
 		usage_text += "\n\n"
 		usage_text += "# Usage:\n"
@@ -239,9 +239,10 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t enter = goto todo location\n"
 		usage_text += "#\t click, then s = select todo\n"
 		result_view.insert(edit, result_view.size(), usage_text)
+		#TODO: add navigate to instant context usage #p1
+		#TODO: add enable_instant_context setting #p1
 
-
-		#TODO: implement on the fly settings #p1
+		#TODO: implement on the fly settings #p2
 		
 
 		sublime.active_window().focus_view(result_view)
@@ -361,10 +362,12 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 		self.view.add_regions('selected_region', [selected_region], "selected", "", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL)
 		self.view.show(selected_region)
 
+		self.view.run_command("review_myself_goto", {"preview": True})
+
 class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfGotoCommand"
 
-	def run(self, edit):
+	def run(self, edit, preview):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
 		result_region_cout = len(result_regions)
@@ -382,7 +385,28 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 
 		result = region_to_result_dict.get('{0},{1}'.format(selected_region.a, selected_region.b)) # use dict.get() instead dict[] to avoid KeyError exception
 		if result is not None:
-			new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
+			if preview:
+				active_window = self.view.window()
+				if active_window.num_groups() != 2:
+					opened_file_view = active_window.find_open_file(result["filepath"])
+					if opened_file_view is not None:
+						opened_file_view.close()
+
+					active_window.run_command("set_layout", {
+						"cols": [0.0, 1.0],
+						"rows": [0.0, 0.5, 1.0],
+						"cells": [[0, 0, 1, 1], [0, 1, 1, 2]]
+						})
+
+				active_window.focus_group(2)
+
+				new_view = active_window.open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION|sublime.TRANSIENT)
+
+				active_window.focus_group(1)
+				active_window.focus_view(self.view)
+
+			else:
+				new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
 
 class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfRefreshResultCommand"
@@ -424,3 +448,6 @@ class ReviewMyselfSelectResultCommand(sublime_plugin.TextCommand):
 		
 				self.view.add_regions('selected_region', [selected_region], "selected", "", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL)
 				self.view.show(selected_region)
+
+				self.view.run_command("review_myself_goto", {"preview": True})
+
