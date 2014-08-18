@@ -1,77 +1,81 @@
 [
 	{
-		"keys": ["down"], "command": "review_myself_navigate_result",
+		"keys": ["s"],
 		"context": [
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		],
-		"args": {"direction": "down"}
+		"command": "review_myself_navigate_result", "args": {"direction": "down"}
 	},
 	{
-		"keys": ["up"], "command": "review_myself_navigate_result",
+		"keys": ["w"], 
 		"context": [
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		],
-		"args": {"direction": "up"}
+		"command": "review_myself_navigate_result", "args": {"direction": "up"}
 	},
 	{
-		"keys": ["j"], "command": "review_myself_navigate_result",
+		"keys": ["f"],
 		"context": [
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		],
-		"args": {"direction": "down"}
+		"command": "review_myself_goto"
 	},
 	{
-		"keys": ["k"], "command": "review_myself_navigate_result",
+		"keys": ["enter"],
 		"context": [
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		],
-		"args": {"direction": "up"}
+		"command": "review_myself_goto"
 	},
 	{
-		"keys": ["enter"], "command": "review_myself_goto",
-		"context": [
-			{"key": "setting.command_mode", "operand": true},
-			{"key": "setting.review_myself_view", "operand": true}
-		]
-	},
-	{
-		"keys": ["r"], "command": "review_myself_refresh_result",
-		"context": [
-			{"key": "setting.command_mode", "operand": true},
-			{"key": "setting.review_myself_view", "operand": true}
-		]
-	},
-	{
-		"keys": ["s"], "command": "review_myself_select_result",
-		"context": [
-			{"key": "setting.command_mode", "operand": true},
-			{"key": "setting.review_myself_view", "operand": true}
-		]
-	},
-	{
-		"keys": ["right"], "command": "review_myself_goto",
+		"keys": ["r"],
 		"context": [
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		],
-		"args": {"preview": true}
+		"command": "review_myself_refresh_result"
 	},
 	{
-		"keys": ["left"],
-		"command": "set_layout",
+		"keys": ["tab"],
 		"context": [
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		],
-		"args":
-		{
-			"cols": [0.0, 1.0],
-			"rows": [0.0, 1.0],
-			"cells": [[0, 0, 1, 1]]
-		}
+		"command": "review_myself_select_result"
 	},
+	{
+		"keys": ["e"],
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"command": "review_myself_start_edit_in_context_panel"
+	},
+	{
+		"keys": ["escape"],
+		"context": [
+			{"key": "setting.review_myself_context_view", "operand": true}
+		],
+		"command": "review_myself_finish_edit_in_context_panel"
+	},
+	{
+		"keys": ["a"],
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"command": "review_myself_set_auto_show_context", "args": { "enable": false}
+	},
+	{
+		"keys": ["d"],
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"command": "review_myself_set_auto_show_context", "args": { "enable": true}
+	}
 ]

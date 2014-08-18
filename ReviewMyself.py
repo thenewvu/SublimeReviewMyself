@@ -233,15 +233,15 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text = ""
 		usage_text += "\n\n"
 		usage_text += "# Usage:\n"
-		usage_text += "#\t {0:15} = refresh result\n".format("r")
-		usage_text += "#\t {0:15} = next todo\n".format("j or down")
-		usage_text += "#\t {0:15} = previous todo\n".format("k or up")
-		usage_text += "#\t {0:15} = goto todo location\n".format("enter")
-		usage_text += "#\t {0:15} = select todo\n".format("click, then s")
-		usage_text += "#\t {0:15} = open instant context (if auto_show_instant_context = false)\n".format("right")
-		usage_text += "#\t {0:15} = close instant context\n".format("left")
-		usage_text += "#\t {0:15} = focus on todo list\n".format("ctrl + 1")
-		usage_text += "#\t {0:15} = focus on instant context\n".format("ctrl + 2")
+		usage_text += "#\t {0:20} = next todo\n".format("s")
+		usage_text += "#\t {0:20} = previous todo\n".format("w")
+		usage_text += "#\t {0:20} = refresh result\n".format("r")
+		usage_text += "#\t {0:20} = start edit in context panel\n".format("e")
+		usage_text += "#\t {0:20} = finish edit in context panel\n".format("escape")
+		usage_text += "#\t {0:20} = goto todo location\n".format("f or enter")
+		usage_text += "#\t {0:20} = open context panel\n".format("d")
+		usage_text += "#\t {0:20} = close context panel\n".format("a")
+		usage_text += "#\t {0:20} = select todo\n".format("move caret, then tab")
 		result_view.insert(edit, result_view.size(), usage_text)
 
 		#TODO: implement on the fly settings #p2
@@ -365,13 +365,13 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 		self.view.show(selected_region)
 
 		settings = Settings(self.view, "ReviewMyself")
-		if settings.get("auto_show_instant_context", True):
+		if view_settings.get("auto_show_context", settings.get("auto_show_context", True)):
 			self.view.run_command("review_myself_goto", {"preview": True})
 
 class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfGotoCommand"
 
-	def run(self, edit, preview = False):
+	def run(self, edit, preview = False, focus_on = False):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
 		result_region_cout = len(result_regions)
@@ -405,9 +405,11 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 				active_window.focus_group(1)
 
 				new_view = active_window.open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION|sublime.TRANSIENT)
+				new_view.settings().set("review_myself_context_view", True)
 
-				active_window.focus_group(0)
-				active_window.focus_view(self.view)
+				if focus_on == False:
+					active_window.focus_group(0)
+					active_window.focus_view(self.view)
 
 			else:
 				new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
@@ -454,6 +456,51 @@ class ReviewMyselfSelectResultCommand(sublime_plugin.TextCommand):
 				self.view.show(selected_region)
 
 				settings = Settings(self.view, "ReviewMyself")
-				if settings.get("auto_show_instant_context", True):
+				if view_settings.get("auto_show_context", settings.get("auto_show_context", True)):
 					self.view.run_command("review_myself_goto", {"preview": True})
 
+class ReviewMyselfSetAutoShowContext(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfToggleAutoShowContext"
+
+	def run(self, edit, enable):
+		view_settings = self.view.settings()
+		view_settings.set("auto_show_context", enable)
+
+		if enable:
+			self.view.run_command("review_myself_goto", { "preview": True })			
+		else:
+			self.view.run_command("review_myself_close_context_panel")
+
+class ReviewMyselfCloseContextPanel(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfCloseContextView"
+
+	def run(self, edit):
+		self.view.window().run_command("set_layout", {
+				"cols": [0.0, 1.0],
+				"rows": [0.0, 1.0],
+				"cells": [[0, 0, 1, 1]]
+			})
+
+class ReviewMyselfStartEditInContextPanel(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfStartEditInContextPanel"
+
+	def run(self, edit):
+		self.view.run_command("review_myself_goto", { "preview": True, "focus_on": True })
+
+class ReviewMyselfFinishEditInContextPanel(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfFinishEditInContextPanel"
+
+	def run(self, edit):
+		active_window = self.view.window()
+		settings = Settings(self.view, "ReviewMyself")
+		result_view = ResultView.get()
+		result_view_settings = result_view.settings()
+		auto_show_context = result_view_settings.get("auto_show_context", settings.get("auto_show_context", True))
+		if auto_show_context == False:
+			self.view.run_command("review_myself_close_context_panel")
+			for view in active_window.views():
+				if view.settings().get("review_myself_context_view", False):
+					view.close()
+					break
+
+		active_window.focus_group(0)
