@@ -244,6 +244,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t {0:20} = select todo\n".format("move caret, then tab")
 		result_view.insert(edit, result_view.size(), usage_text)
 
+		#TODO: implement todo group by directory level #p1
 		#TODO: implement on the fly settings #p2
 		
 

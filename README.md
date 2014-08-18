@@ -4,7 +4,15 @@ __An in-source todo manage plugin for Subline Text 3, list todos in your sources
 
 ## Screenshots
 
-![Review Myself Result](http://i.imgur.com/55Wnh67.png "Review Myself - Result")
+![Review Myself Result](http://i.imgur.com/D3nZuP5.png "Review Myself - Result")
+
+## What's new in Review Myself v2 ?
+
+- Change all key map, more convenient.
+- Context panel
+- Editing right in context panel
+
+![Review Myself Result](http://i.imgur.com/Ls8ZMJe.png "Review Myself - Context Panel")
 
 ## Setup
 
@@ -20,7 +28,8 @@ By default, Review Myself has this default settings:
 		"is_ignore_case": true,
 		"ignored_dir_patterns": [".svn", ".git", ".hg", "CVS"],
 		"only_care_file_patterns": ["*.cpp", "*.c", "*.h", "*.py", "*.js", "*.md"],
-		"color_scheme": "Packages/Review Myself/ReviewMyself-NeonDark.hidden-tmTheme"
+		"color_scheme": "Packages/Review Myself/ReviewMyself-NeonDark.hidden-tmTheme",
+		"auto_show_context": true
 	}
 
 To tweak them, go to Preferences -> Package Settings -> Review Myself -> Settings - User, ST will open a __user setting file__ for you, put your settings there and save it.
@@ -36,7 +45,7 @@ Simple as this:
 
 By default, ReviewMyself only supports priority number from 1 to 3. I don't think we need more than that, but you can customize it (just increment the number in the priority pattern).
 
-## How list todos ?
+## How to list todos ?
 
 To list todos in the current file:
 
@@ -44,7 +53,7 @@ To list todos in the current file:
 
 To list todos in a file or a folder in side bar:
 
-	Right click on the file or the folder => choose ReviewMyself
+	Right click on the file or the folder, then choose ReviewMyself
 
 To list todos in the current Sublime Text project:
 
@@ -64,7 +73,7 @@ Add this line to your Review Myself user setting file (Preferences -> Package Se
 
 ## Get involved ?
 
-If have any issue, please post here: https://github.com/thenewvu/SublimeReviewMyself/issues
+If you meet any issue, please post here: https://github.com/thenewvu/SublimeReviewMyself/issues
 
 If you want to fork or contribute: https://github.com/thenewvu/SublimeReviewMyself/
 
