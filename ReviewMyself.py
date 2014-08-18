@@ -238,8 +238,9 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t k or up = previous todo\n"
 		usage_text += "#\t enter = goto todo location\n"
 		usage_text += "#\t click, then s = select todo\n"
+		usage_text += "#\t ctrl + 1 = focus on todo list\n"
+		usage_text += "#\t ctrl + 2 = focus on instant context\n"
 		result_view.insert(edit, result_view.size(), usage_text)
-		#TODO: add navigate to instant context usage #p1
 		#TODO: add enable_instant_context setting #p1
 
 		#TODO: implement on the fly settings #p2
