@@ -243,7 +243,6 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t {0:15} = focus on todo list\n".format("ctrl + 1")
 		usage_text += "#\t {0:15} = focus on instant context\n".format("ctrl + 2")
 		result_view.insert(edit, result_view.size(), usage_text)
-		#TODO: add enable_instant_context setting #p1
 
 		#TODO: implement on the fly settings #p2
 		
@@ -365,7 +364,9 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 		self.view.add_regions('selected_region', [selected_region], "selected", "", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL)
 		self.view.show(selected_region)
 
-		self.view.run_command("review_myself_goto", {"preview": True})
+		settings = Settings(self.view, "ReviewMyself")
+		if settings.get("auto_show_instant_context", True):
+			self.view.run_command("review_myself_goto", {"preview": True})
 
 class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfGotoCommand"
@@ -452,5 +453,7 @@ class ReviewMyselfSelectResultCommand(sublime_plugin.TextCommand):
 				self.view.add_regions('selected_region', [selected_region], "selected", "", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL)
 				self.view.show(selected_region)
 
-				self.view.run_command("review_myself_goto", {"preview": True})
+				settings = Settings(self.view, "ReviewMyself")
+				if settings.get("auto_show_instant_context", True):
+					self.view.run_command("review_myself_goto", {"preview": True})
 
