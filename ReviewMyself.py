@@ -238,9 +238,10 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t {0:15} = previous todo\n".format("k or up")
 		usage_text += "#\t {0:15} = goto todo location\n".format("enter")
 		usage_text += "#\t {0:15} = select todo\n".format("click, then s")
+		usage_text += "#\t {0:15} = open instant context (if auto_show_instant_context = false)\n".format("right")
+		usage_text += "#\t {0:15} = close instant context\n".format("left")
 		usage_text += "#\t {0:15} = focus on todo list\n".format("ctrl + 1")
 		usage_text += "#\t {0:15} = focus on instant context\n".format("ctrl + 2")
-		usage_text += "#\t {0:15} = close instant context\n".format("alt + shift + 1")
 		result_view.insert(edit, result_view.size(), usage_text)
 		#TODO: add enable_instant_context setting #p1
 
@@ -369,7 +370,7 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfGotoCommand"
 
-	def run(self, edit, preview):
+	def run(self, edit, preview = False):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
 		result_region_cout = len(result_regions)
@@ -389,22 +390,22 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 		if result is not None:
 			if preview:
 				active_window = self.view.window()
-				if active_window.num_groups() != 2:
-					opened_file_view = active_window.find_open_file(result["filepath"])
-					if opened_file_view is not None:
-						opened_file_view.close()
+				opened_file_view = active_window.find_open_file(result["filepath"])
+				if opened_file_view is not None:
+					opened_file_view.close()
 
+				if active_window.num_groups() != 2:
 					active_window.run_command("set_layout", {
 						"cols": [0.0, 1.0],
 						"rows": [0.0, 0.5, 1.0],
 						"cells": [[0, 0, 1, 1], [0, 1, 1, 2]]
 						})
 
-				active_window.focus_group(2)
+				active_window.focus_group(1)
 
 				new_view = active_window.open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION|sublime.TRANSIENT)
 
-				active_window.focus_group(1)
+				active_window.focus_group(0)
 				active_window.focus_view(self.view)
 
 			else:

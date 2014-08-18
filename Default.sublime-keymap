@@ -51,5 +51,27 @@
 			{"key": "setting.command_mode", "operand": true},
 			{"key": "setting.review_myself_view", "operand": true}
 		]
-	}
+	},
+	{
+		"keys": ["right"], "command": "review_myself_goto",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"args": {"preview": true}
+	},
+	{
+		"keys": ["left"],
+		"command": "set_layout",
+		"context": [
+			{"key": "setting.command_mode", "operand": true},
+			{"key": "setting.review_myself_view", "operand": true}
+		],
+		"args":
+		{
+			"cols": [0.0, 1.0],
+			"rows": [0.0, 1.0],
+			"cells": [[0, 0, 1, 1]]
+		}
+	},
 ]
