@@ -178,6 +178,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		paths_to_search = args.get("paths_to_search", [])
 		results = args.get("results", [])
 		results = sorted(results, key=lambda result: (result['priority'])) # sort by priority
+		#TODO: implement todo group by "From" #p2
 		processed_file_count = args.get("processed_file_count", 0)
 		processed_time = args.get("processed_time", 0)
 
@@ -198,6 +199,19 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		search_session_info += "\n\n"
 
 		result_view.insert(edit, result_view.size(), search_session_info)
+
+		settings = Settings(self.view, "ReviewMyself")
+
+		#TODO: remove linenum from result view by default #p1
+		todo_result_pattern = ""
+		todo_result_pattern += u"{index:<5}"
+		todo_result_pattern += u"{filepath}"
+		show_linenum = settings.get("show_linenum", False)
+		if show_linenum:
+			todo_result_pattern += u":{linenum:<5}"
+		todo_result_pattern += u" => "
+		todo_result_pattern += u"{priority}"
+		todo_result_pattern += u"{todo}"
 		
 		result_regions = []
 
@@ -207,7 +221,7 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 				if minimized_filepath.startswith(path_to_search):
 					minimized_filepath = minimized_filepath.replace(path_to_search, Util.getBasenameFromPath(path_to_search))
 
-			formatted_result = u'{index:<5}{filepath}:{linenum:<5} => {priority}{todo}'.format(
+			formatted_result = todo_result_pattern.format(
 				index = "{0}.".format(index),
 				filepath = minimized_filepath,
 				linenum = result['linenum'],
@@ -244,7 +258,6 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t {0:20} = select todo\n".format("move caret, then tab")
 		result_view.insert(edit, result_view.size(), usage_text)
 
-		#TODO: implement todo group by directory level #p1
 		#TODO: implement on the fly settings #p2
 		
 
