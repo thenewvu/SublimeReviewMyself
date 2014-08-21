@@ -202,7 +202,6 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 
 		settings = Settings(self.view, "ReviewMyself")
 
-		#TODO: remove linenum from result view by default #p1
 		todo_result_pattern = ""
 		todo_result_pattern += u"{index:<5}"
 		todo_result_pattern += u"{filepath}"
@@ -440,14 +439,23 @@ class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 class ReviewMyselfReviewCurrentFileCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfReviewCurrentFileCommand"
 
-	def run(self, edit):
+	def run(self, edit, append = False):
 		active_window = sublime.active_window()
 		active_view = active_window.active_view()
 
 		if active_view:
 			file_name = active_view.file_name()
 			if file_name:
-				self.view.run_command("review_myself_impl", {"paths": [file_name]})
+				paths_to_search = [file_name]
+				if append:
+					result_view = ResultView.get()
+					result_view_settings = result_view.settings()
+					current_paths_to_search = result_view_settings.get("paths_to_search", [])
+					for path in current_paths_to_search:
+						if path != file_name:
+							paths_to_search.append(path)
+
+				self.view.run_command("review_myself_impl", {"paths": paths_to_search})
 
 class ReviewMyselfSelectResultCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfSelectResultCommand"

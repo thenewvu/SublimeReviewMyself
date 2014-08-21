@@ -9,5 +9,9 @@
     {
         "caption": "ReviewMyself: Current File",
         "command": "review_myself_review_current_file"
+    },
+    {
+        "caption": "ReviewMyself: Current File (Append)",
+        "command": "review_myself_review_current_file", "args": { "append": true }
     }
 ]
