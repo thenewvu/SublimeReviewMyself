@@ -1,0 +1,4 @@
++ add review opening files command
++ add review in "append" way commands
++ commands in side bar better
+- hide line number in result view by default (this change is in minimize result view progress)
