@@ -299,10 +299,26 @@ class Counter():
 		sublime.status_message("ReviewMyself: {0} files processed".format(self.current))
 
 class ReviewMyselfImpl(sublime_plugin.TextCommand):
-	def run(self, edit, paths):
+	def run(self, edit, paths, append = False):
 		settings = Settings(self.view, "ReviewMyself")
 
-		self.paths_to_search = paths
+		if append:
+			result_view = ResultView.get()
+			result_view_settings = result_view.settings()
+			self.paths_to_search = result_view_settings.get("paths_to_search", [])
+			print("paths_to_search: ", self.paths_to_search)
+			print("new_paths: ", paths)
+			for new_path in paths:
+				duplicate = False
+				for old_path in self.paths_to_search:
+					if new_path == old_path:
+						duplicate = True
+						break
+				if not duplicate:
+					self.paths_to_search.append(new_path)
+		else:
+			self.paths_to_search = paths
+
 		self.is_ignore_case = settings.get("is_ignore_case", True)
 		self.todo_patterns = settings.get("todo_patterns", [])
 		self.priority_patterns = settings.get("priority_patterns", [])
@@ -447,15 +463,10 @@ class ReviewMyselfReviewCurrentFileCommand(sublime_plugin.TextCommand):
 			file_name = active_view.file_name()
 			if file_name:
 				paths_to_search = [file_name]
-				if append:
-					result_view = ResultView.get()
-					result_view_settings = result_view.settings()
-					current_paths_to_search = result_view_settings.get("paths_to_search", [])
-					for path in current_paths_to_search:
-						if path != file_name:
-							paths_to_search.append(path)
-
-				self.view.run_command("review_myself_impl", {"paths": paths_to_search})
+				self.view.run_command("review_myself_impl", {
+					"paths": paths_to_search,
+					"append": append
+					})
 
 class ReviewMyselfSelectResultCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfSelectResultCommand"
