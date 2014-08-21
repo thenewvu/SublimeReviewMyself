@@ -345,9 +345,11 @@ class ReviewMyselfImpl(sublime_plugin.TextCommand):
 
 class ReviewMyselfAutoModeCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		self.view.run_command("review_myself_impl", {
-			"paths": self.view.window().folders()
-			})
+		folders_in_project = self.view.window().folders()
+		if folders_in_project:
+			self.view.run_command("review_myself_impl", {
+				"paths": folders_in_project
+				})
 
 class ReviewMyselfCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfCommand"
