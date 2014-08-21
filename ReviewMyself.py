@@ -545,6 +545,10 @@ class ReviewMyselfOpeningFilesCommand(sublime_plugin.TextCommand):
 		active_window = self.view.window()
 		opening_views = active_window.views()
 		
+		if not opening_views:
+			Util.status("ReviewMyself: Not found any opening files")
+			return
+		
 		paths_to_search = []
 		for view in opening_views:
 			file_name = view.file_name()
