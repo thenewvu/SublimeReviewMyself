@@ -526,3 +526,18 @@ class ReviewMyselfFinishEditInContextPanel(sublime_plugin.TextCommand):
 					break
 
 		active_window.focus_group(0)
+
+class ReviewMyselfOpeningFilesCommand(sublime_plugin.TextCommand):
+	TAG = "ReviewMyself.ReviewMyselfOpeningFilesCommand"
+
+	def run(self, edit):
+		active_window = self.view.window()
+		opening_views = active_window.views()
+		
+		paths_to_search = []
+		for view in opening_views:
+			file_name = view.file_name()
+			if file_name:
+				paths_to_search.append(file_name)
+
+		self.view.run_command("review_myself_impl", { "paths": paths_to_search })
