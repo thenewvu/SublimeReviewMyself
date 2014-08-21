@@ -4,9 +4,14 @@
 		"id": "side-bar-end-separator"
 	},
 	{
-		"caption": "ReviewMyself",
+		"caption": "ReviewMyself: This one",
 		"command": "review_myself_impl",
 		"args": { "paths": [] }
+	},
+	{
+		"caption": "ReviewMyself: This one (Append)",
+		"command": "review_myself_impl",
+		"args": { "paths": [], "append": true}
 	},
 	{
 		"caption": "-",
