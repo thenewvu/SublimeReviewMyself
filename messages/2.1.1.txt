@@ -1,0 +1,2 @@
+* fix crash when don't have any folder in project
+* fix crash when don't have any opening file
