@@ -9,6 +9,6 @@
 	"ignored_dir_patterns": [".svn", ".git", ".hg", "CVS"],
 	"only_care_file_patterns": ["*.cpp", "*.c", "*.h", "*.py", "*.js", "*.md"],
 	"color_scheme": "Packages/Review Myself/ReviewMyself-NeonDark.hidden-tmTheme",
-	"auto_show_context": true,
+	"auto_show_context": false,
 	"show_linenum": false
 }

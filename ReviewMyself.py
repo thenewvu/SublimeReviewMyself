@@ -249,8 +249,6 @@ class ReviewMyselfShowResultCommand(sublime_plugin.TextCommand):
 		usage_text += "#\t {0:20} = next todo\n".format("s")
 		usage_text += "#\t {0:20} = previous todo\n".format("w")
 		usage_text += "#\t {0:20} = refresh result\n".format("r")
-		usage_text += "#\t {0:20} = start edit in context panel\n".format("e")
-		usage_text += "#\t {0:20} = finish edit in context panel\n".format("escape")
 		usage_text += "#\t {0:20} = goto todo location\n".format("f or enter")
 		usage_text += "#\t {0:20} = open context panel\n".format("d")
 		usage_text += "#\t {0:20} = close context panel\n".format("a")
@@ -402,7 +400,7 @@ class ReviewMyselfNavigateResultCommand(sublime_plugin.TextCommand):
 class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfGotoCommand"
 
-	def run(self, edit, preview = False, focus_on = False):
+	def run(self, edit, preview = False):
 		view_settings = self.view.settings()
 		result_regions = self.view.get_regions("result_regions")
 		result_region_cout = len(result_regions)
@@ -420,30 +418,27 @@ class ReviewMyselfGotoCommand(sublime_plugin.TextCommand):
 
 		result = region_to_result_dict.get('{0},{1}'.format(selected_region.a, selected_region.b)) # use dict.get() instead dict[] to avoid KeyError exception
 		if result is not None:
-			if preview:
-				active_window = self.view.window()
-				opened_file_view = active_window.find_open_file(result["filepath"])
-				if opened_file_view is not None:
-					opened_file_view.close()
+			active_window = self.view.window()
+			file_path = result['filepath']
 
-				if active_window.num_groups() != 2:
-					active_window.run_command("set_layout", {
-						"cols": [0.0, 1.0],
-						"rows": [0.0, 0.5, 1.0],
-						"cells": [[0, 0, 1, 1], [0, 1, 1, 2]]
-						})
+			if preview:
+				active_window.run_command("set_layout", {
+					"cols": [0.0, 1.0],
+					"rows": [0.0, 0.5, 1.0],
+					"cells": [[0, 0, 1, 1], [0, 1, 1, 2]]
+					})
 
 				active_window.focus_group(1)
 
-				new_view = active_window.open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION|sublime.TRANSIENT)
-				new_view.settings().set("review_myself_context_view", True)
+				opened_file_view = active_window.find_open_file(file_path)
+				if opened_file_view is not None:
+					active_window.set_view_index(opened_file_view, 1, 0)
 
-				if focus_on == False:
-					active_window.focus_group(0)
-					active_window.focus_view(self.view)
-
+				new_view = active_window.open_file("{filepath}:{linenum}".format(filepath = file_path, linenum = result['linenum']), sublime.ENCODED_POSITION|sublime.TRANSIENT)
+				active_window.focus_view(self.view)
 			else:
-				new_view = self.view.window().open_file("{filepath}:{linenum}".format(filepath = result['filepath'], linenum = result['linenum']), sublime.ENCODED_POSITION)
+				self.view.run_command("review_myself_close_context_panel")
+				new_view = active_window.open_file("{filepath}:{linenum}".format(filepath = file_path, linenum = result['linenum']), sublime.ENCODED_POSITION)
 
 class ReviewMyselfRefreshResultCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfRefreshResultCommand"
@@ -515,30 +510,6 @@ class ReviewMyselfCloseContextPanel(sublime_plugin.TextCommand):
 				"rows": [0.0, 1.0],
 				"cells": [[0, 0, 1, 1]]
 			})
-
-class ReviewMyselfStartEditInContextPanel(sublime_plugin.TextCommand):
-	TAG = "ReviewMyself.ReviewMyselfStartEditInContextPanel"
-
-	def run(self, edit):
-		self.view.run_command("review_myself_goto", { "preview": True, "focus_on": True })
-
-class ReviewMyselfFinishEditInContextPanel(sublime_plugin.TextCommand):
-	TAG = "ReviewMyself.ReviewMyselfFinishEditInContextPanel"
-
-	def run(self, edit):
-		active_window = self.view.window()
-		settings = Settings(self.view, "ReviewMyself")
-		result_view = ResultView.get()
-		result_view_settings = result_view.settings()
-		auto_show_context = result_view_settings.get("auto_show_context", settings.get("auto_show_context", True))
-		if auto_show_context == False:
-			self.view.run_command("review_myself_close_context_panel")
-			for view in active_window.views():
-				if view.settings().get("review_myself_context_view", False):
-					view.close()
-					break
-
-		active_window.focus_group(0)
 
 class ReviewMyselfOpeningFilesCommand(sublime_plugin.TextCommand):
 	TAG = "ReviewMyself.ReviewMyselfOpeningFilesCommand"

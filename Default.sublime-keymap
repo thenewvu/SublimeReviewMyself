@@ -48,21 +48,6 @@
 		"command": "review_myself_select_result"
 	},
 	{
-		"keys": ["e"],
-		"context": [
-			{"key": "setting.command_mode", "operand": true},
-			{"key": "setting.review_myself_view", "operand": true}
-		],
-		"command": "review_myself_start_edit_in_context_panel"
-	},
-	{
-		"keys": ["escape"],
-		"context": [
-			{"key": "setting.review_myself_context_view", "operand": true}
-		],
-		"command": "review_myself_finish_edit_in_context_panel"
-	},
-	{
 		"keys": ["a"],
 		"context": [
 			{"key": "setting.command_mode", "operand": true},
