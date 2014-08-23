@@ -1,0 +1,4 @@
+- remove 'editing in context panel' feature.
++ turn off 'auto_show_context' by default.
+
+Those features are not handful as I thought.
