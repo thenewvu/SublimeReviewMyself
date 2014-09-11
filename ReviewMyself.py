@@ -9,6 +9,7 @@ import fnmatch
 import re
 import timeit
 import ntpath
+import json
 
 
 class Util():
@@ -95,7 +96,7 @@ class TodoSearchEngine():
 			if os.path.exists(path_to_search):
 				if os.path.isfile(path_to_search):
 					yield path_to_search # if user indicated a file, that mean he/she want to scan that file, so just yield it
-				
+
 				for dirpath, dirnames, filenames in os.walk(path_to_search, topdown = True):
 					if self.hasOnlyCareFiles():
 						filenames[:] = Util.filterByUnixPatterns(texts = filenames, patterns = self.only_care_file_patterns, keep_if_match = True)
@@ -316,6 +317,20 @@ class ReviewMyselfImpl(sublime_plugin.TextCommand):
 					self.paths_to_search.append(new_path)
 		else:
 			self.paths_to_search = paths
+
+		for path in self.paths_to_search[:]:
+			if os.path.isdir(path):
+				spec_file_path = os.path.join(path, '.local.reviewmyself')
+				if os.path.exists(spec_file_path):
+					spec_file = open(spec_file_path, 'rt', encoding = 'utf-8')
+					spec = json.load(spec_file)
+					only_care_paths = spec.get('only_care_paths')
+					if only_care_paths and len(only_care_paths) > 0:
+						self.paths_to_search.remove(path)
+						for only_care_path in only_care_paths:
+							only_care_path = os.path.realpath(os.path.expanduser(os.path.abspath(os.path.join(path, only_care_path))))
+							if os.path.exists(only_care_path):
+								self.paths_to_search.append(only_care_path)
 
 		self.is_ignore_case = settings.get("is_ignore_case", True)
 		self.todo_patterns = settings.get("todo_patterns", [])
