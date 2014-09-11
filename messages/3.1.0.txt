@@ -1,0 +1,26 @@
++ add specific folder setting feature
+
+Thanks to @isyara suggested this feature:
+	https://github.com/thenewvu/SublimeReviewMyself/issues/2
+
+This feature allows you tell Review Myself only track some file or dir in your project folder.
+
+For example, assume that your project has this structure:
+
+foo/
+	inner_1/
+		inner_1_1/
+			file.py
+			file1.py
+			file2.py
+		inner_1_2/
+	inner_2/
+	inner_3/
+
+You only want to track todos in 'inner_1_1' folder, put '.local.reviewmyself' file in 'foo' folder, and tweak it:
+
+{
+	"only_care_paths": ["inner_1/innner_1_1"]
+}
+
+Note: 'Only care paths' must be relative paths.
